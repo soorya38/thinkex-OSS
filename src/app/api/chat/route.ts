@@ -194,7 +194,8 @@ export async function POST(req: Request) {
               };
 
               // Prepare file info with URLs directly
-              const fileInfos = supabaseUrls.map((fileUrl: string) => {
+              type FileInfo = { fileUrl: string; filename: string; mediaType: string };
+              const fileInfos: FileInfo[] = supabaseUrls.map((fileUrl: string) => {
                 const filename = decodeURIComponent(fileUrl.split('/').pop() || 'file');
                 const mediaType = getMediaTypeFromUrl(fileUrl);
                 return { fileUrl, filename, mediaType };
@@ -202,7 +203,7 @@ export async function POST(req: Request) {
 
               // Analyze all files in a SINGLE batched AI call
               try {
-                const fileListText = fileInfos.map((f, i) => `${i + 1}. ${f.filename}`).join('\n');
+                const fileListText = fileInfos.map((f: FileInfo, i: number) => `${i + 1}. ${f.filename}`).join('\n');
                 
                 const batchPrompt = instruction
                   ? `Analyze the following ${fileInfos.length} file(s):\n${fileListText}\n\n${instruction}\n\nProvide your analysis for each file, clearly labeled with the filename.`
@@ -211,7 +212,7 @@ export async function POST(req: Request) {
                 // Build message content with all files using URLs directly
                 const messageContent: Array<{ type: "text"; text: string } | { type: "file"; data: string; mediaType: string; filename?: string }> = [
                   { type: "text", text: batchPrompt },
-                  ...fileInfos.map(f => ({
+                  ...fileInfos.map((f: FileInfo) => ({
                     type: "file" as const,
                     data: f.fileUrl,
                     mediaType: f.mediaType,
