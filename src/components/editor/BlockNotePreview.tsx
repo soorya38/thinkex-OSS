@@ -94,6 +94,8 @@ export const BlockNotePreview = memo(function BlockNotePreview({ blocks, classNa
                     height: `${virtualizer.getTotalSize()}px`,
                     width: '100%',
                     position: 'relative',
+                    // Ensure nested content is not clipped
+                    overflow: 'visible',
                 }}
             >
                 {virtualizer.getVirtualItems().map((virtualItem) => {
@@ -109,6 +111,9 @@ export const BlockNotePreview = memo(function BlockNotePreview({ blocks, classNa
                                 left: 0,
                                 width: '100%',
                                 transform: `translateY(${virtualItem.start}px)`,
+                                // Ensure nested content is not clipped
+                                overflow: 'visible',
+                                willChange: 'transform',
                             }}
                         >
                             <PreviewBlock block={block} index={virtualItem.index} blocks={blocks} isScrollLocked={isScrollLocked} />
@@ -158,7 +163,7 @@ export const PreviewBlock = memo(function PreviewBlock({ block, index, blocks, i
     const renderChildren = useMemo(() => {
         if (!childrenArray || childrenArray.length === 0) return null;
         return (
-            <div className="mt-1 pl-4">
+            <div className="mt-1 pl-4" style={{ overflow: 'visible' }}>
                 {childrenArray.map((child, childIndex) => (
                     <PreviewBlock key={child.id} block={child as Block} index={childIndex} blocks={childrenArray} isScrollLocked={isScrollLocked} />
                 ))}
@@ -202,9 +207,9 @@ export const PreviewBlock = memo(function PreviewBlock({ block, index, blocks, i
 
         case "bulletListItem":
             return (
-                <div className="mb-1">
+                <div className="mb-1" style={{ overflow: 'visible' }}>
                     <div className="flex gap-2 items-start">
-                        <span className="select-none text-muted-foreground mt-1">•</span>
+                        <span className="select-none text-muted-foreground">•</span>
                         <div className="flex-1 min-w-0 break-words">
                             <p><InlineContent content={content} /></p>
                         </div>
@@ -216,12 +221,13 @@ export const PreviewBlock = memo(function PreviewBlock({ block, index, blocks, i
         case "numberedListItem": {
             // Calculate the list number by counting how many consecutive numberedListItem blocks
             // appear before this one (starting from the beginning of the list)
+            // For nested lists, each nested list restarts numbering from 1
             let listNumber = 1;
 
             // Count backwards to find where the list starts
             let startIndex = index;
             for (let i = index - 1; i >= 0; i--) {
-                if (blocks[i].type === "numberedListItem") {
+                if (blocks[i]?.type === "numberedListItem") {
                     startIndex = i;
                 } else {
                     break; // Stop when we hit a non-numbered-list item
@@ -232,9 +238,9 @@ export const PreviewBlock = memo(function PreviewBlock({ block, index, blocks, i
             listNumber = index - startIndex + 1;
 
             return (
-                <div className="mb-1">
-                    <div className="flex gap-2 items-start">
-                        <span className="select-none text-muted-foreground font-mono text-xs mt-1">{listNumber}.</span>
+                <div className="mb-1" style={{ overflow: 'visible' }}>
+                    <div className="flex gap-2 items-center">
+                        <span className="select-none text-muted-foreground font-mono text-xs">{listNumber}.</span>
                         <div className="flex-1 min-w-0 break-words">
                             <p><InlineContent content={content} /></p>
                         </div>
@@ -246,7 +252,7 @@ export const PreviewBlock = memo(function PreviewBlock({ block, index, blocks, i
 
         case "checkListItem":
             return (
-                <div className="mb-1">
+                <div className="mb-1" style={{ overflow: 'visible' }}>
                     <div className="flex gap-2 items-start">
                         <div className="mt-0.5">
                             <input
