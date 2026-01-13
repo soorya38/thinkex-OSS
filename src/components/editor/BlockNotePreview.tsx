@@ -94,8 +94,6 @@ export const BlockNotePreview = memo(function BlockNotePreview({ blocks, classNa
                     height: `${virtualizer.getTotalSize()}px`,
                     width: '100%',
                     position: 'relative',
-                    // Ensure nested content is not clipped
-                    overflow: 'visible',
                 }}
             >
                 {virtualizer.getVirtualItems().map((virtualItem) => {
@@ -111,8 +109,6 @@ export const BlockNotePreview = memo(function BlockNotePreview({ blocks, classNa
                                 left: 0,
                                 width: '100%',
                                 transform: `translateY(${virtualItem.start}px)`,
-                                // Ensure nested content is not clipped
-                                overflow: 'visible',
                             }}
                         >
                             <PreviewBlock block={block} index={virtualItem.index} blocks={blocks} isScrollLocked={isScrollLocked} />
@@ -162,7 +158,7 @@ export const PreviewBlock = memo(function PreviewBlock({ block, index, blocks, i
     const renderChildren = useMemo(() => {
         if (!childrenArray || childrenArray.length === 0) return null;
         return (
-            <div className="mt-1 pl-4" style={{ overflow: 'visible' }}>
+            <div className="mt-1 pl-4">
                 {childrenArray.map((child, childIndex) => (
                     <PreviewBlock key={child.id} block={child as Block} index={childIndex} blocks={childrenArray} isScrollLocked={isScrollLocked} />
                 ))}
@@ -206,8 +202,8 @@ export const PreviewBlock = memo(function PreviewBlock({ block, index, blocks, i
 
         case "bulletListItem":
             return (
-                <div className="mb-1" style={{ overflow: 'visible' }}>
-                    <div className="flex gap-2 items-start">
+                <div className="mb-1">
+                    <div className="flex gap-2 items-center">
                         <span className="select-none text-muted-foreground">•</span>
                         <div className="flex-1 min-w-0 break-words">
                             <p><InlineContent content={content} /></p>
@@ -237,8 +233,8 @@ export const PreviewBlock = memo(function PreviewBlock({ block, index, blocks, i
             listNumber = index - startIndex + 1;
 
             return (
-                <div className="mb-1" style={{ overflow: 'visible' }}>
-                    <div className="flex gap-2 items-start">
+                <div className="mb-1">
+                    <div className="flex gap-2 items-center">
                         <span className="select-none text-muted-foreground font-mono text-xs">{listNumber}.</span>
                         <div className="flex-1 min-w-0 break-words">
                             <p><InlineContent content={content} /></p>
@@ -251,7 +247,7 @@ export const PreviewBlock = memo(function PreviewBlock({ block, index, blocks, i
 
         case "checkListItem":
             return (
-                <div className="mb-1" style={{ overflow: 'visible' }}>
+                <div className="mb-1">
                     <div className="flex gap-2 items-start">
                         <div className="mt-0.5">
                             <input
