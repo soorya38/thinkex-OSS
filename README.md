@@ -12,7 +12,7 @@ Head over to [thinkex.app](https://thinkex.app) to start right away, no setup re
 
 *   **Framework:** [Next.js](https://nextjs.org/)
 *   **Styling:** [Tailwind CSS](https://tailwindcss.com/), [Shadcn UI](https://ui.shadcn.com/)
-*   **Database:** PostgreSQL with [Drizzle ORM](https://orm.drizzle.team/)
+*   **Database:** [PostgreSQL](https://github.com/postgres/postgres) with [Drizzle ORM](https://orm.drizzle.team/)
 *   **State & Data:** [TanStack Query](https://tanstack.com/query/latest), [Zustand](https://github.com/pmndrs/zustand)
 
 ## Self-Hosting
