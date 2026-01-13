@@ -6,13 +6,13 @@
 export const seoConfig = {
   defaultTitle: "ThinkEx",
   defaultDescription:
-    "Study and work with information effortlessly.",
+    "Interact with sources, control AI context, and synthesize information in a workspace built for how you actually think.",
   defaultKeywords:
     "AI workspace, productivity, collaboration, artificial intelligence, workspace tools, ThinkEx, AI assistant, creative workspace",
   siteUrl: "https://thinkex.app",
   siteName: "ThinkEx",
   author: "ThinkEx",
-  defaultImage: "/thinkexnewopengraph.png",
+  defaultImage: "/opengraph.png",
   themeColor: "#5227FF",
 } as const;
 
