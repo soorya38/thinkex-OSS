@@ -28,11 +28,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://thinkex.app"),
   title: "ThinkEx",
   description:
-    "Import documents, control AI context, and organize your information in a workspace built for modern knowledge work.",
+    "Interact with sources, control AI context, and synthesize information in a workspace built for how you actually think.",
   openGraph: {
     title: "ThinkEx",
     description:
-      "Import documents, control AI context, and organize your information in a workspace built for modern knowledge work.",
+      "Interact with sources, control AI context, and synthesize information in a workspace built for how you actually think.",
     url: "https://thinkex.app",
     siteName: "ThinkEx",
     images: [
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ThinkEx",
     description:
-      "Import documents, control AI context, and organize your information in a workspace built for modern knowledge work.",
+      "Interact with sources, control AI context, and synthesize information in a workspace built for how you actually think.",
     images: ["/opengraph.png"],
   },
   icons: {
