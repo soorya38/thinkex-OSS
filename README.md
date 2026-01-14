@@ -75,7 +75,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 ## Acknowledgments
 
 ThinkEx is built on incredible open-source projects:
-s
 *   [Assistant UI](https://www.assistant-ui.com/) – AI chat components
 *   [EmbedPDF](https://embedpdf.com/) – PDF rendering
 *   [BlockNote](https://blocknotejs.org/) – Block-based editor
