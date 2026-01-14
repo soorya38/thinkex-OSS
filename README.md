@@ -54,8 +54,6 @@ Think of a large physical desk. When you're deeply studying or working on a proj
 
 ## Features
 
-ThinkEx is built to make context **explicit, structured, and reusable**:
-
 - **Context you control**: Hand-pick the exact cards/notes/document sections the AI can use (no “guessy” retrieval).
 - **Spatial canvas**: Arrange notes, PDFs, videos, and chat side-by-side to spot connections and compare sources.
 - **First-class documents**: Native PDF viewing with highlights/annotations; add YouTube with transcript-backed context.
@@ -83,7 +81,7 @@ ThinkEx is built to make context **explicit, structured, and reusable**:
 
 ## Self-Hosting
 
-Want full control? Run ThinkEx on your own infrastructure.
+Want to run ThinkEx on your own infrastructure?
 
 ### Prerequisites
 
