@@ -1,30 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { getTemplateInitialState } from "@/lib/workspace/templates";
 import type { WorkspaceWithState, WorkspaceTemplate } from "@/lib/workspace-state/types";
 import type { CardColor } from "@/lib/workspace-state/colors";
 import { randomUUID } from "crypto";
 import { db, workspaces } from "@/lib/db/client";
 import { eq, desc, asc, sql } from "drizzle-orm";
+import { requireAuth, withErrorHandling } from "@/lib/api/workspace-helpers";
 
 /**
  * GET /api/workspaces
  * List all workspaces for the authenticated user
  * Note: Sharing is fork-based - users import copies, not access the original
  */
-export async function GET() {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    // Allow anonymous users
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userId = session.user.id;
+async function handleGET() {
+  const userId = await requireAuth();
 
     // Get workspaces owned by user
     // Order by sort_order ASC, fallback to updated_at DESC for null sort_order values
@@ -53,29 +42,17 @@ export async function GET() {
       color: w.color as CardColor | null,
     }));
 
-    return NextResponse.json({ workspaces: workspaceList });
-  } catch (error) {
-    console.error("Error in GET /api/workspaces:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+  return NextResponse.json({ workspaces: workspaceList });
 }
+
+export const GET = withErrorHandling(handleGET, "GET /api/workspaces");
 
 /**
  * POST /api/workspaces
  * Create a new workspace
  */
-export async function POST(request: NextRequest) {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    // Allow anonymous users
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userId = session.user.id;
+async function handlePOST(request: NextRequest) {
+  const userId = await requireAuth();
 
     const body = await request.json();
     const { name, description, template, is_public, icon, color, initialState: customInitialState } = body;
@@ -223,10 +200,7 @@ export async function POST(request: NextRequest) {
         ...workspace,
         state: initialState,
       }
-    }, { status: 201 });
-  } catch (error) {
-    console.error("Error in POST /api/workspaces:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+  }, { status: 201 });
 }
 
+export const POST = withErrorHandling(handlePOST, "POST /api/workspaces");
