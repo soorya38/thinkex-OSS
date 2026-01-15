@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
 import { getTemplateInitialState } from "@/lib/workspace/templates";
 import type { WorkspaceWithState, WorkspaceTemplate } from "@/lib/workspace-state/types";
 import type { CardColor } from "@/lib/workspace-state/colors";
 import { randomUUID } from "crypto";
 import { db, workspaces } from "@/lib/db/client";
 import { eq, desc, asc, sql } from "drizzle-orm";
-import { requireAuth, withErrorHandling } from "@/lib/api/workspace-helpers";
+import { requireAuth, requireAuthWithUserInfo, withErrorHandling } from "@/lib/api/workspace-helpers";
 
 /**
  * GET /api/workspaces
@@ -54,7 +52,9 @@ export const GET = withErrorHandling(handleGET, "GET /api/workspaces");
  * Create a new workspace
  */
 async function handlePOST(request: NextRequest) {
-  const userId = await requireAuth();
+  // Use requireAuthWithUserInfo to avoid duplicate session fetch
+  const user = await requireAuthWithUserInfo();
+  const userId = user.userId;
 
     const body = await request.json();
     const { name, description, template, is_public, icon, color, initialState: customInitialState } = body;
@@ -122,18 +122,8 @@ async function handlePOST(request: NextRequest) {
       const eventId = randomUUID();
       const timestamp = Date.now();
 
-      // Get user's display name from Better Auth session
-      // Better Auth stores name and email in the session
-      let userName: string | undefined;
-      try {
-        const session = await auth.api.getSession({
-          headers: await headers(),
-        });
-        userName = session?.user?.name || session?.user?.email || undefined;
-      } catch {
-        // Could not get user name
-        // Continue without userName
-      }
+      // Use user info from requireAuthWithUserInfo to avoid duplicate session fetch
+      const userName = user.name || user.email || undefined;
 
       // Create snapshot event first (starts at version 0, creates version 1)
       try {
