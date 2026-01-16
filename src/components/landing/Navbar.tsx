@@ -73,6 +73,7 @@ export function Navbar() {
               backgroundColor: isScrolled ? "hsl(var(--background) / 0.95)" : "transparent",
               backdropFilter: isScrolled ? "blur(8px)" : "none",
               marginTop: isScrolled ? "0.25rem" : "0",
+              borderStyle: "solid",
             }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
@@ -129,29 +130,31 @@ export function Navbar() {
                   >
                     Login
                   </Link>
-                  <Link href="/guest-setup" prefetch>
-                    <Button
-                      onClick={() => posthog.capture('navbar-get-started-clicked', { location: 'desktop' })}
-                      size="sm"
-                      className="rounded-md bg-foreground font-medium text-background transition-all hover:bg-foreground/90"
-                    >
+                  <Button
+                    asChild
+                    onClick={() => posthog.capture('navbar-get-started-clicked', { location: 'desktop' })}
+                    size="sm"
+                    className="rounded-md bg-foreground font-medium text-background transition-all hover:bg-foreground/90"
+                  >
+                    <Link href="/guest-setup" prefetch>
                       Get Started
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </>
               )}
               {!isPending && session && (
                 <>
-                  <Link href="/dashboard" prefetch>
-                    <Button
-                      onClick={() => posthog.capture('navbar-dashboard-clicked', { location: 'desktop' })}
-                      size="sm"
-                      variant="outline"
-                      className="rounded-md font-medium transition-all hover:bg-foreground/5"
-                    >
+                  <Button
+                    asChild
+                    onClick={() => posthog.capture('navbar-dashboard-clicked', { location: 'desktop' })}
+                    size="sm"
+                    variant="outline"
+                    className="rounded-md font-medium transition-all hover:bg-foreground/5"
+                  >
+                    <Link href="/dashboard" prefetch>
                       Dashboard
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="relative h-9 w-9 rounded-full">
