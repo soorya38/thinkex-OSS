@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "motion/react";
+import { useScroll, useTransform, motion } from "motion/react";
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { getCardColorCSS } from "@/lib/workspace-state/colors";
 import type { CardColor } from "@/lib/workspace-state/colors";
-import { HeroAnimation } from "./HeroAnimation";
 
 // Random card colors for background
 const cardColors: CardColor[] = [
@@ -37,7 +36,7 @@ function ParallaxCard({ card, index, scrollYProgress, isMobileOnly = false }: Pa
   const y = useTransform(
     scrollYProgress,
     [0, 1],
-    [0, card.speed * 1200] // More dramatic parallax movement
+    [0, card.speed * 1200]
   );
 
   const [isMobile, setIsMobile] = useState(false);
@@ -58,9 +57,6 @@ function ParallaxCard({ card, index, scrollYProgress, isMobileOnly = false }: Pa
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 0.5, scale: 1 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
       style={{
         y,
         top,
@@ -72,6 +68,7 @@ function ParallaxCard({ card, index, scrollYProgress, isMobileOnly = false }: Pa
         willChange: "transform",
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
+        opacity: 0.5,
       }}
       className={`absolute rounded-md border border-foreground/20 shadow-xl ${isMobileOnly ? 'hidden md:block' : ''}`}
     >
@@ -115,7 +112,6 @@ export function Hero() {
       >
         {/* Random Cards with Parallax */}
         {backgroundCards.map((card, index) => {
-          // Show only first 3 cards on mobile, all 8 on desktop
           const isMobileOnly = index >= 3;
           return (
             <ParallaxCard
@@ -138,20 +134,12 @@ export function Hero() {
       </div>
       {/* Content */}
       <div className="relative z-10 mx-auto w-full max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="space-y-8 md:space-y-12 text-center"
-        >
+        <div className="space-y-8 md:space-y-12 text-center">
           {/* Backed by Section */}
-          <motion.a
+          <a
             href="https://www.hatchery.umd.edu/about-mokhtarzadas"
             target="_blank"
             rel="noopener noreferrer"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.05 }}
             className="flex items-center justify-center gap-2 text-base md:text-lg text-muted-foreground mb-2 md:mb-4 hover:text-foreground transition-colors cursor-pointer"
           >
             <Image
@@ -160,31 +148,21 @@ export function Hero() {
               width={140}
               height={28}
               className="h-6 md:h-7 w-auto"
-              unoptimized
             />
             <span>Mokhtarzada Hatchery 2025 Cohort</span>
-          </motion.a>
+          </a>
 
           {/* Header - Above Video */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="mt-4 md:mt-12 text-4xl font-normal tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl"
-          >
+          <h1 className="mt-4 md:mt-12 text-4xl font-normal tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
             Turn{" "}
             <span className="relative inline-block">
               <span className="relative px-3 py-0.5 rounded-sm inline-block">
-                <motion.span
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: "100%", opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.7, ease: "easeOut" }}
+                <span
                   className="absolute inset-0 rounded-sm border-4"
                   style={{
                     background: "rgba(252, 211, 77, 0.15)",
                     borderColor: "#EAB308",
                     boxShadow: "0 0 0 1px rgba(234, 179, 8, 0.3)",
-                    originX: 0,
                     left: "2px",
                   }}
                 />
@@ -194,15 +172,10 @@ export function Hero() {
             into
             <br />
             organized knowledge
-          </motion.h1>
+          </h1>
 
           {/* Get Started Button - Above Video */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex justify-center"
-          >
+          <div className="flex justify-center">
             <Link href="/guest-setup">
               <Button
                 size="lg"
@@ -211,59 +184,37 @@ export function Hero() {
                 Get Started
               </Button>
             </Link>
-          </motion.div>
+          </div>
 
-          {/* Mobile Video Placeholder - Only visible on mobile */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.25 }}
-            className="relative w-full md:hidden"
-          >
+          {/* Mobile Demo Image - Only visible on mobile */}
+          <div className="relative w-full md:hidden">
             <div className="relative w-full max-w-md mx-auto px-4">
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border border-foreground/20 shadow-2xl bg-gradient-to-br from-background via-muted/30 to-background">
-                {/* Video placeholder content */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                  {/* Play button icon */}
-                  <div className="mb-4 p-4 rounded-full bg-primary/10 border-2 border-primary/20">
-                    <svg
-                      className="h-8 w-8 text-primary ml-1"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2 text-foreground">
-                    Demo
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-                    Experience our AI-powered workspace on desktop for the full interactive demonstration
-                  </p>
-                </div>
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border border-foreground/20 shadow-2xl">
+                <Image
+                  src="/demo.png"
+                  alt="ThinkEx Demo"
+                  fill
+                  className="object-cover"
+                />
               </div>
-            </div>
-          </motion.div>
-
-          {/* Desktop Animation - Hidden on mobile */}
-          <div className="relative w-full hidden md:block">
-            <div className="relative w-full max-w-5xl mx-auto px-4">
-              <HeroAnimation />
             </div>
           </div>
 
-          {/* Subheader - Below Video */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="mx-auto max-w-3xl text-xl text-muted-foreground sm:text-2xl"
-          >
-            Study and work with information effortlessly.
-          </motion.p>
-        </motion.div>
+          {/* Desktop Demo Image - Hidden on mobile */}
+          <div className="relative w-full hidden md:block">
+            <div className="relative w-full max-w-5xl mx-auto px-4">
+              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md border border-foreground/20 shadow-2xl">
+                <Image
+                  src="/demo.png"
+                  alt="ThinkEx Demo"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
-

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
@@ -88,25 +87,16 @@ export function Pricing() {
           }}
         ></div>
         <div className="relative p-4 md:p-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-8 md:mb-20"
-          >
+          <div className="mb-8 md:mb-20">
             <h2 className="text-3xl font-normal tracking-normal text-foreground sm:text-4xl md:text-5xl">
               Simple, transparent pricing
             </h2>
-          </motion.div>
+          </div>
 
           <div className="grid gap-8 md:grid-cols-3">
-            {pricingTiers.map((tier, index) => (
-              <motion.div
+            {pricingTiers.map((tier) => (
+              <div
                 key={tier.name}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
                 className={`relative rounded-md border p-8 ${tier.highlighted
                   ? "border-foreground/30 bg-foreground/5 shadow-lg"
                   : "border-foreground/10 bg-background"
@@ -180,7 +170,7 @@ export function Pricing() {
                     {tier.cta}
                   </Button>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -188,4 +178,3 @@ export function Pricing() {
     </section>
   );
 }
-

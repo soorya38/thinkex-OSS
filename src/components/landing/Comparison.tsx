@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { Check, X } from "lucide-react";
 import { getCardAccentColor } from "@/lib/workspace-state/colors";
 import type { CardColor } from "@/lib/workspace-state/colors";
@@ -10,6 +9,7 @@ interface Feature {
   thinkex: boolean | string;
   competitor1: boolean | string;
   competitor2: boolean | string;
+  competitor3: boolean | string;
 }
 
 const features: Feature[] = [
@@ -18,24 +18,28 @@ const features: Feature[] = [
     thinkex: true,
     competitor1: false,
     competitor2: false,
+    competitor3: false,
   },
   {
     name: "AI Message Extractions",
     thinkex: true,
     competitor1: false,
     competitor2: false,
+    competitor3: false,
   },
   {
     name: "Visual Canvas with Drag & Drop",
     thinkex: true,
     competitor1: "Basic",
     competitor2: "Basic",
+    competitor3: false,
   },
   {
     name: "PDF & URL Import",
     thinkex: true,
     competitor1: true,
     competitor2: false,
+    competitor3: true,
   },
 
   {
@@ -43,13 +47,15 @@ const features: Feature[] = [
     thinkex: true,
     competitor1: true,
     competitor2: true,
+    competitor3: false,
   },
 ];
 
 const competitors = [
   { name: "ThinkEx", isHighlight: true },
+  { name: "NotebookLM", isHighlight: false },
   { name: "Notion", isHighlight: false },
-  { name: "Obsidian", isHighlight: false },
+  { name: "ChatGPT/Gemini", isHighlight: false },
 ];
 
 export function Comparison() {
@@ -65,16 +71,11 @@ export function Comparison() {
           }}
         ></div>
         <div className="relative p-4 md:p-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-8 md:mb-20"
-          >
+          <div className="mb-8 md:mb-20">
             <h2 className="text-3xl font-normal tracking-normal text-foreground sm:text-4xl md:text-5xl">
               How we compare
             </h2>
-          </motion.div>
+          </div>
 
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <div className="min-w-full inline-block">
@@ -88,8 +89,8 @@ export function Comparison() {
                       <th
                         key={competitor.name}
                         className={`text-center py-3 px-2 md:py-4 md:px-6 text-xs md:text-sm font-medium ${competitor.isHighlight
-                            ? "text-foreground"
-                            : "text-foreground/70"
+                          ? "text-foreground"
+                          : "text-foreground/70"
                           }`}
                       >
                         {competitor.name}
@@ -98,7 +99,7 @@ export function Comparison() {
                   </tr>
                 </thead>
                 <tbody>
-                  {features.map((feature, index) => (
+                  {features.map((feature) => (
                     <tr
                       key={feature.name}
                       className="border-b border-foreground/5 hover:bg-foreground/5 transition-colors"
@@ -145,6 +146,19 @@ export function Comparison() {
                           </span>
                         )}
                       </td>
+                      <td className="py-3 px-2 md:py-4 md:px-6 text-center">
+                        {typeof feature.competitor3 === "boolean" ? (
+                          feature.competitor3 ? (
+                            <Check className="h-4 w-4 md:h-5 md:w-5 text-foreground mx-auto" />
+                          ) : (
+                            <X className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground mx-auto" />
+                          )
+                        ) : (
+                          <span className="text-xs md:text-sm text-muted-foreground">
+                            {feature.competitor3}
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -156,4 +170,3 @@ export function Comparison() {
     </section>
   );
 }
-

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "motion/react";
+import { useScroll, useTransform, motion } from "motion/react";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { getCardColorCSS } from "@/lib/workspace-state/colors";
@@ -38,9 +38,6 @@ function ParallaxCard({ card, index, scrollYProgress, isMobileOnly = false }: Pa
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 0.5, scale: 1 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
       style={{
         y,
         top: card.top,
@@ -52,6 +49,7 @@ function ParallaxCard({ card, index, scrollYProgress, isMobileOnly = false }: Pa
         willChange: "transform",
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
+        opacity: 0.5,
       }}
       className={`absolute rounded-md border border-foreground/20 shadow-xl ${isMobileOnly ? 'hidden md:block' : ''}`}
     >
@@ -85,7 +83,7 @@ export function FinalCTA() {
       }}
     >
       {/* Workspace Background Elements */}
-      <div 
+      <div
         className="absolute inset-0 z-0 opacity-40"
         style={{
           willChange: "transform",
@@ -106,17 +104,17 @@ export function FinalCTA() {
             />
           );
         })}
-        
+
         {/* Gradient fade-in at top */}
-        <div 
+        <div
           className="absolute top-0 left-0 right-0 h-64 pointer-events-none"
           style={{
             background: `linear-gradient(to bottom, var(--background) 0%, transparent 100%)`,
           }}
         />
-        
+
         {/* Gradient fade-out at bottom */}
-        <div 
+        <div
           className="absolute bottom-0 left-0 right-0 h-64 pointer-events-none"
           style={{
             background: `linear-gradient(to bottom, transparent 0%, var(--background) 100%)`,
@@ -126,40 +124,16 @@ export function FinalCTA() {
 
       {/* Content */}
       <div className="relative z-10 mx-auto w-full max-w-6xl text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="space-y-6 md:space-y-8"
-        >
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl font-medium tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl"
-          >
+        <div className="space-y-6 md:space-y-8">
+          <h2 className="text-4xl font-medium tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
             Start today for free
-          </motion.h2>
+          </h2>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mx-auto max-w-2xl text-xl text-muted-foreground sm:text-2xl"
-          >
+          <p className="mx-auto max-w-2xl text-xl text-muted-foreground sm:text-2xl">
             Join 50+ users who are already on ThinkEx.
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex justify-center pt-4"
-          >
+          <div className="flex justify-center pt-4">
             <Link href="/guest-setup">
               <Button
                 size="lg"
@@ -168,10 +142,9 @@ export function FinalCTA() {
                 Get Started
               </Button>
             </Link>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
-

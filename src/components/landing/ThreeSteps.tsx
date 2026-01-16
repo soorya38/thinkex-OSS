@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import Image from "next/image";
 import { getCardAccentColor } from "@/lib/workspace-state/colors";
 import type { CardColor } from "@/lib/workspace-state/colors";
@@ -53,25 +52,16 @@ export function ThreeSteps() {
           }}
         ></div>
         <div className="relative p-4 md:p-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-8 md:mb-20"
-          >
+          <div className="mb-8 md:mb-20">
             <h2 className="text-3xl font-normal tracking-normal text-foreground sm:text-4xl md:text-5xl">
               More features, more power
             </h2>
-          </motion.div>
+          </div>
 
           <div className="grid gap-8 md:gap-12 md:grid-cols-3">
-            {steps.map((step, index) => (
-              <motion.div
+            {steps.map((step) => (
+              <div
                 key={step.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="space-y-6"
               >
                 {/* Image */}
@@ -83,7 +73,6 @@ export function ThreeSteps() {
                       fill
                       className="object-cover"
                       style={step.id === "step-2" ? { objectPosition: "left center" } : undefined}
-                      unoptimized
                     />
                   </div>
                 </div>
@@ -97,7 +86,7 @@ export function ThreeSteps() {
                     {step.description}
                   </p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
