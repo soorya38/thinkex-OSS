@@ -158,7 +158,7 @@ export function Pricing() {
                   ))}
                 </ul>
 
-                <Link href={tier.ctaLink} className="block">
+                <Link href={tier.ctaLink} className="block" prefetch>
                   <Button
                     className={`w-full ${tier.highlighted
                       ? "bg-foreground text-background hover:bg-foreground/90"
