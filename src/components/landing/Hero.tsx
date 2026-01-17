@@ -21,7 +21,7 @@ export function Hero() {
   return (
     <section
       id="hero"
-      className="relative flex md:min-h-screen items-center justify-center overflow-hidden px-4 pt-24 pb-10 md:py-12 sm:px-4 lg:px-6"
+      className="relative flex md:min-h-screen items-center justify-center overflow-hidden px-4 pt-16 pb-10 md:py-12 sm:px-4 lg:px-6"
     >
       {/* Workspace Background Elements */}
       <div className="absolute inset-0 z-0 opacity-40">
@@ -86,7 +86,7 @@ export function Hero() {
 
           {/* Header - Above Video */}
           <div className="space-y-6">
-            <h1 className="mt-4 md:mt-12 text-4xl font-normal tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl">
+            <h1 className="mt-4 md:mt-12 text-3xl font-normal tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl">
               The{" "}
               <span className="relative inline-block">
                 <span className="relative px-3 py-0.5 rounded-sm inline-block">
@@ -106,7 +106,7 @@ export function Hero() {
 
             <div className="w-full max-w-2xl mx-auto h-[1.5px] bg-gradient-to-r from-transparent via-muted-foreground/20 to-transparent" />
 
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-lg md:text-2xl text-muted-foreground max-w-3xl mx-auto">
               ThinkEx is the visual thinking environment where you can compound your notes, media, and AI chats into lasting knowledge.
             </p>
           </div>

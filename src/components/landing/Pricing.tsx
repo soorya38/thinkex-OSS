@@ -79,14 +79,13 @@ export function Pricing() {
 
   return (
     <section id="pricing" className="pt-8 md:pt-20 pb-4 md:pb-16 px-4 sm:px-4 lg:px-6">
-      <div className="mx-auto max-w-6xl relative">
-        <div
-          className="absolute -top-8 -right-2 -bottom-8 -left-2 md:-top-12 md:-right-6 md:-bottom-12 md:-left-6 bg-gray-900/40 dark:bg-gray-900/40 rounded-md"
-          style={{
-            border: `2px solid ${borderColor}`,
-          }}
-        ></div>
-        <div className="relative p-4 md:p-6">
+      <div
+        className="mx-auto max-w-6xl relative bg-gray-900/40 dark:bg-gray-900/40 rounded-md p-6 md:p-10"
+        style={{
+          border: `2px solid ${borderColor}`,
+        }}
+      >
+        <div className="relative">
           <div className="mb-8 md:mb-20">
             <h2 className="text-3xl font-normal tracking-normal text-foreground sm:text-4xl md:text-5xl">
               Simple, transparent pricing
