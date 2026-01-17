@@ -57,7 +57,9 @@ export function FinalCTA() {
             Start today for free
           </h2>
 
-          Join 100+ users who are already on ThinkEx.
+          <p className="mx-auto max-w-2xl text-xl text-muted-foreground sm:text-2xl">
+            Join 100+ users who are already on ThinkEx.
+          </p>
 
           <div className="flex justify-center pt-4">
             <Button
