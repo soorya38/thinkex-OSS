@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { Users, Github, ArrowRight } from "lucide-react";
 import { BackgroundCard, cardColors, type BackgroundCardData } from "./BackgroundCard";
 
 // Random card positions and sizes (static - no parallax)
@@ -20,7 +21,7 @@ export function Hero() {
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-8 md:py-24 sm:px-6 lg:px-8"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-4 md:py-12 sm:px-6 lg:px-8"
     >
       {/* Workspace Background Elements */}
       <div className="absolute inset-0 z-0 opacity-40">
@@ -49,25 +50,42 @@ export function Hero() {
       <div className="relative z-10 mx-auto w-full max-w-6xl">
         <div className="space-y-8 md:space-y-12 text-center">
           {/* Backed by Section */}
-          <a
-            href="https://www.hatchery.umd.edu/about-mokhtarzadas"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 text-base md:text-lg text-muted-foreground mb-2 md:mb-4 hover:text-foreground transition-colors cursor-pointer"
-          >
-            <Image
-              src="/hatchery.png"
-              alt="Mokhtarzada Hatchery"
-              width={140}
-              height={28}
-              className="h-6 md:h-7 w-auto"
-              priority
-            />
-            <span>Mokhtarzada Hatchery 2025 Cohort</span>
-          </a>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-base md:text-lg text-muted-foreground mb-2 md:mb-4 font-light">
+            <a
+              href="https://www.hatchery.umd.edu/about-mokhtarzadas"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer"
+            >
+              <Image
+                src="/hatchery.png"
+                alt="Mokhtarzada Hatchery"
+                width={140}
+                height={28}
+                className="h-6 md:h-7 w-auto"
+                priority
+              />
+              <span>Mokhtarzada Hatchery 2025 Cohort</span>
+            </a>
+            <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/50" />
+            <div className="flex items-center gap-2">
+              <Users className="h-7 w-7 text-blue-500" />
+              <span>100+ Weekly Active Users</span>
+            </div>
+            <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/50" />
+            <a
+              href="https://github.com/thinkex-oss/thinkex"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer"
+            >
+              <Github className="h-7 w-7 text-violet-500" />
+              <span>Open Source</span>
+            </a>
+          </div>
 
           {/* Header - Above Video */}
-          <h1 className="mt-4 md:mt-12 text-4xl font-normal tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
+          <h1 className="mt-4 md:mt-12 text-5xl font-normal tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl">
             The{" "}
             <span className="relative inline-block">
               <span className="relative px-3 py-0.5 rounded-sm inline-block">
@@ -86,15 +104,22 @@ export function Hero() {
             Artificial Intelligence
           </h1>
 
+          <div className="w-full max-w-2xl mx-auto h-px bg-gradient-to-r from-transparent via-muted-foreground/20 to-transparent my-4" />
+
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
+            ThinkEx is the visual workspace where your notes, documents, media, and AI chats live—giving you a canvas to think.
+          </p>
+
           {/* Get Started Button - Above Video */}
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-12 md:mb-24">
             <Button
               asChild
               size="lg"
               className="h-12 rounded-md bg-foreground px-8 text-base font-medium text-background transition-all hover:bg-foreground/90"
             >
-              <Link href="/guest-setup" prefetch>
-                Get Started
+              <Link href="/guest-setup" prefetch className="flex items-center gap-2">
+                Try for Free
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>

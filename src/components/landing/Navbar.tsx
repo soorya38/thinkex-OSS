@@ -79,17 +79,17 @@ export function Navbar() {
           >
             {/* Logo/Brand */}
             <Link href="#hero" className="flex items-center gap-2 group z-10">
-              <div className="relative h-6 w-6 flex items-center justify-center transition-transform group-hover:scale-105">
+              <div className="relative h-8 w-8 flex items-center justify-center transition-transform group-hover:scale-105">
                 <Image
                   src="/newlogothinkex.svg"
                   alt="ThinkEx Logo"
-                  width={24}
-                  height={24}
+                  width={32}
+                  height={32}
                   className="object-contain"
                   priority
                 />
               </div>
-              <span className="text-xl font-normal text-foreground">ThinkEx</span>
+              <span className="text-2xl font-normal text-foreground">ThinkEx</span>
             </Link>
 
             {/* Desktop Navigation - Centered */}
@@ -105,7 +105,7 @@ export function Navbar() {
                       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                   }}
-                  className="text-sm font-normal text-foreground/70 transition-colors hover:text-foreground cursor-pointer"
+                  className="text-base font-normal text-foreground/70 transition-colors hover:text-foreground cursor-pointer"
                 >
                   {link.label}
                 </a>
@@ -122,18 +122,18 @@ export function Navbar() {
                     rel="noopener noreferrer"
                     className="text-foreground/70 transition-colors hover:text-foreground cursor-pointer"
                   >
-                    <Github className="h-5 w-5" />
+                    <Github className="h-6 w-6" />
                   </a>
                   <Link
                     href="/auth/sign-in"
-                    className="text-sm font-normal text-foreground/70 transition-colors hover:text-foreground cursor-pointer"
+                    className="text-base font-normal text-foreground/70 transition-colors hover:text-foreground cursor-pointer"
                   >
                     Login
                   </Link>
                   <Button
                     asChild
                     onClick={() => posthog.capture('navbar-get-started-clicked', { location: 'desktop' })}
-                    size="sm"
+                    size="default"
                     className="rounded-md bg-foreground font-medium text-background transition-all hover:bg-foreground/90"
                   >
                     <Link href="/guest-setup" prefetch>
@@ -201,7 +201,7 @@ export function Navbar() {
                     className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                     aria-label="Toggle menu"
                   >
-                    <Menu className="h-6 w-6" />
+                    <Menu className="h-8 w-8" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
