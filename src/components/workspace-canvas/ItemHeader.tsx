@@ -152,9 +152,15 @@ export function ItemHeader(props: {
 
   if (readOnly) {
     return (
-      <div className={`${noMargin ? "" : "mb-4"} select-none ${allowWrap ? "flex-1 flex flex-col" : ""}`}>
+      <div className={`${noMargin ? "" : "mb-4"} select-none ${allowWrap ? "flex-1 flex flex-col min-w-0" : ""}`}>
         <div
-          style={{ color: '#ffffff' }}
+          style={{ 
+            color: '#ffffff',
+            ...(allowWrap ? {
+              wordBreak: 'break-all',
+              overflowX: 'hidden'
+            } : {})
+          }}
           className={`w-full ${textSizeClass} font-medium ${allowWrap ? "flex-1" : ""}`}
         >
           {name || <span className="text-gray-400">Item title</span>}
@@ -223,9 +229,13 @@ export function ItemHeader(props: {
         placeholder="Item title"
         style={{
           color: '#ffffff',
-          width: (fullWidth || allowWrap) ? '100%' : undefined
+          width: (fullWidth || allowWrap) ? '100%' : undefined,
+          ...(allowWrap ? {
+            wordBreak: 'break-all',
+            overflowX: 'hidden'
+          } : {})
         }}
-        className={`appearance-none ${textSizeClass} font-medium outline-none placeholder:text-gray-400 transition-all focus:text-accent focus:placeholder:text-accent/65 bg-transparent resize-none ${allowWrap ? "flex-1 w-full overflow-auto whitespace-normal leading-normal" : "inline-block overflow-hidden leading-tight whitespace-nowrap"} ${fullWidth ? 'w-full' : ''}`}
+        className={`appearance-none ${textSizeClass} font-medium outline-none placeholder:text-gray-400 transition-all focus:text-accent focus:placeholder:text-accent/65 bg-transparent resize-none ${allowWrap ? "flex-1 w-full overflow-y-auto whitespace-normal leading-normal" : "inline-block overflow-hidden leading-tight whitespace-nowrap"} ${fullWidth ? 'w-full' : ''}`}
         rows={allowWrap ? undefined : 1}
       />
     </div>
