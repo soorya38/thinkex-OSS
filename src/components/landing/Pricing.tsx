@@ -78,7 +78,7 @@ export function Pricing() {
   const borderColor = getCardAccentColor("#10B981" as CardColor, 0.2); // Green border
 
   return (
-    <section id="pricing" className="pt-8 md:pt-32 pb-4 md:pb-16 px-4 sm:px-4 lg:px-6">
+    <section id="pricing" className="pt-8 md:pt-20 pb-4 md:pb-16 px-4 sm:px-4 lg:px-6">
       <div className="mx-auto max-w-6xl relative">
         <div
           className="absolute -top-8 -right-2 -bottom-8 -left-2 md:-top-12 md:-right-6 md:-bottom-12 md:-left-6 bg-gray-900/40 dark:bg-gray-900/40 rounded-md"

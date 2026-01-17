@@ -21,7 +21,7 @@ export function Hero() {
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-4 md:py-12 sm:px-6 lg:px-8"
+      className="relative flex md:min-h-screen items-center justify-center overflow-hidden px-4 pt-24 pb-10 md:py-12 sm:px-4 lg:px-6"
     >
       {/* Workspace Background Elements */}
       <div className="absolute inset-0 z-0 opacity-40">
@@ -50,7 +50,7 @@ export function Hero() {
       <div className="relative z-10 mx-auto w-full max-w-6xl">
         <div className="space-y-8 md:space-y-12 text-center">
           {/* Backed by Section */}
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-base md:text-lg text-muted-foreground mb-0 md:mb-1 font-light">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm md:text-lg text-muted-foreground mb-0 md:mb-1 font-light">
             <a
               href="https://www.hatchery.umd.edu/about-mokhtarzadas"
               target="_blank"
@@ -62,14 +62,14 @@ export function Hero() {
                 alt="Mokhtarzada Hatchery"
                 width={140}
                 height={28}
-                className="h-6 md:h-7 w-auto"
+                className="h-5 md:h-7 w-auto"
                 priority
               />
               <span>Mokhtarzada Hatchery 2025 Cohort</span>
             </a>
             <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/50" />
             <div className="flex items-center gap-2">
-              <Users className="h-7 w-7 text-blue-500" />
+              <Users className="h-5 w-5 md:h-7 md:w-7 text-blue-500" />
               <span>100+ Weekly Active Users</span>
             </div>
             <div className="hidden sm:block w-1 h-1 rounded-full bg-muted-foreground/50" />
@@ -79,14 +79,14 @@ export function Hero() {
               rel="noopener noreferrer"
               className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer"
             >
-              <Github className="h-7 w-7 text-violet-500" />
+              <Github className="h-5 w-5 md:h-7 md:w-7 text-violet-500" />
               <span>Open Source</span>
             </a>
           </div>
 
           {/* Header - Above Video */}
           <div className="space-y-6">
-            <h1 className="mt-4 md:mt-12 text-5xl font-normal tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl">
+            <h1 className="mt-4 md:mt-12 text-4xl font-normal tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl">
               The{" "}
               <span className="relative inline-block">
                 <span className="relative px-3 py-0.5 rounded-sm inline-block">
@@ -127,7 +127,7 @@ export function Hero() {
 
           {/* Mobile Demo Image - Only visible on mobile */}
           <div className="relative w-full md:hidden">
-            <div className="relative w-full max-w-md mx-auto px-4">
+            <div className="relative w-full max-w-md mx-auto">
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border border-foreground/20 shadow-2xl">
                 <Image
                   src="/demo.png"
@@ -143,7 +143,7 @@ export function Hero() {
 
           {/* Desktop Demo Image - Hidden on mobile */}
           <div className="relative w-full hidden md:block">
-            <div className="relative w-full md:w-[calc(100%+3rem)] md:-ml-6">
+            <div className="relative w-full">
               <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md border border-foreground/20 shadow-2xl">
                 <Image
                   src="/demo.png"
