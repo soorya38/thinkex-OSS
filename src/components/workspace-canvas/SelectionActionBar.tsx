@@ -24,7 +24,7 @@ export default function SelectionActionBar({
     <div
       className={cn(
         "absolute left-1/2 -translate-x-1/2 bottom-4",
-        "inline-flex items-center gap-2 px-3 py-2 rounded-xl",
+        "inline-flex items-center gap-2 px-3 py-2 rounded-md",
         "bg-white/5 border border-white/10",
         "shadow-lg backdrop-blur-md",
         "transition-all duration-300 ease-out",
@@ -53,7 +53,7 @@ export default function SelectionActionBar({
             type="button"
             onClick={onCreateFolderFromSelection}
             className={cn(
-              "inline-flex items-center gap-2 px-2 py-2 rounded-lg",
+              "inline-flex items-center gap-2 px-2 py-2 rounded-md",
               "text-sm font-medium text-amber-400",
               "bg-amber-500/10 border border-amber-500/20",
               "hover:bg-amber-500/20 hover:border-amber-500/30",
@@ -75,7 +75,7 @@ export default function SelectionActionBar({
             type="button"
             onClick={onMoveSelected}
             className={cn(
-              "inline-flex items-center gap-2 px-2 py-2 rounded-lg",
+              "inline-flex items-center gap-2 px-2 py-2 rounded-md",
               "text-sm font-medium text-blue-400",
               "bg-blue-500/10 border border-blue-500/20",
               "hover:bg-blue-500/20 hover:border-blue-500/30",
@@ -97,7 +97,7 @@ export default function SelectionActionBar({
             type="button"
             onClick={onDeleteSelected}
             className={cn(
-              "inline-flex items-center gap-2 px-2 py-2 rounded-lg",
+              "inline-flex items-center gap-2 px-2 py-2 rounded-md",
               "text-sm font-medium text-red-400",
               "bg-red-500/10 border border-red-500/20",
               "hover:bg-red-500/20 hover:border-red-500/30",
@@ -122,7 +122,7 @@ export default function SelectionActionBar({
             type="button"
             onClick={onClearSelection}
             className={cn(
-              "inline-flex items-center justify-center p-2 rounded-lg",
+              "inline-flex items-center justify-center p-2 rounded-md",
               "text-white/60",
               "hover:text-white/90 hover:bg-white/5",
               "transition-all duration-200"
