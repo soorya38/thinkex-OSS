@@ -505,6 +505,7 @@ export function useWorkspaceOperations(
   );
 
   // deleteFolderWithContents deletes the folder and all items inside it (including nested)
+  // Uses atomic bulk update pattern (same as handleBulkDelete in WorkspaceSection)
   const deleteFolderWithContents = useCallback(
     (folderId: string) => {
       const folder = currentState.items?.find(i => i.id === folderId && i.type === 'folder');
@@ -512,18 +513,30 @@ export function useWorkspaceOperations(
       
       // Find all descendant items recursively (handles nested folders)
       const allDescendantIds = getAllDescendantIds(folderId, currentState.items);
+      
+      // Create set of all IDs to delete (descendants + folder itself)
+      const idsToDelete = new Set([...allDescendantIds, folderId]);
       const itemCount = allDescendantIds.length;
       
-      logger.debug("📁 [FOLDER-DELETE-WITH-CONTENTS] Found items to delete:", { itemCount, itemIds: allDescendantIds });
+      logger.debug("📁 [FOLDER-DELETE-WITH-CONTENTS] Found items to delete:", { itemCount, itemIds: [...idsToDelete] });
       
-      // Delete all descendant items first (fire-and-forget mutations)
-      // Note: deleteItem triggers optimistic updates via mutation.mutate()
-      for (const itemId of allDescendantIds) {
-        deleteItem(itemId);
+      // Delete PDF files from storage (fire-and-forget, non-blocking)
+      // This is best-effort cleanup - files may become orphaned if this fails
+      const itemsToDelete = currentState.items.filter(item => idsToDelete.has(item.id));
+      for (const item of itemsToDelete) {
+        if (item.type === 'pdf') {
+          const pdfData = item.data as { fileUrl?: string };
+          if (pdfData?.fileUrl) {
+            fetch(`/api/delete-file?url=${encodeURIComponent(pdfData.fileUrl)}`, {
+              method: 'DELETE',
+            }).catch(err => logger.warn("📁 [FOLDER-DELETE-WITH-CONTENTS] Failed to delete PDF file:", err));
+          }
+        }
       }
       
-      // Then delete the folder itself
-      deleteItem(folderId);
+      // Atomic bulk delete using updateAllItems pattern (single BULK_ITEMS_UPDATED event)
+      const remainingItems = currentState.items.filter(item => !idsToDelete.has(item.id));
+      updateAllItems(remainingItems);
       
       toast.success(
         folder 
@@ -531,7 +544,7 @@ export function useWorkspaceOperations(
           : `Folder and ${itemCount} ${itemCount === 1 ? 'item' : 'items'} deleted`
       );
     },
-    [deleteItem, currentState.items, getAllDescendantIds]
+    [currentState.items, getAllDescendantIds, updateAllItems]
   );
 
   const moveItemToFolder = useCallback(
