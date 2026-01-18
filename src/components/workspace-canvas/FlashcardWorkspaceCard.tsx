@@ -478,7 +478,9 @@ export function FlashcardWorkspaceCard({
                                     top: '100%',
                                     height: '6px',
                                     backgroundColor: item.color ? getCardColorCSS(item.color as CardColor, 0.32) : 'var(--card)',
-                                    border: borderColor && borderWidth ? `${borderWidth} solid ${borderColor}` : 'none',
+                                    borderLeft: 'none',
+                                    borderRight: 'none',
+                                    borderBottom: 'none',
                                     borderTop: 'none',
                                     opacity: isFlipping ? 0 : 1,
                                 }}
@@ -490,7 +492,9 @@ export function FlashcardWorkspaceCard({
                                     top: 'calc(100% + 4px)',
                                     height: '6px',
                                     backgroundColor: item.color ? getCardColorCSS(item.color as CardColor, 0.15) : 'var(--card)',
-                                    border: `1px solid ${item.color ? getCardColorCSS(item.color as CardColor, 0.15) : 'var(--card)'}`,
+                                    borderLeft: 'none',
+                                    borderRight: 'none',
+                                    borderBottom: 'none',
                                     borderTop: 'none',
                                     opacity: isFlipping ? 0 : 1,
                                 }}
