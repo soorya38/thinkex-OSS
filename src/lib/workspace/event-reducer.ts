@@ -45,9 +45,10 @@ export function eventReducer(state: AgentState, event: WorkspaceEvent): AgentSta
         ...state,
         items: state.items
           .filter(item => item.id !== deletedItemId)
-          // If deleting a folder-type item, clear folderId from items that were in it
+          // If deleting a folder-type item, clear folderId and layout from items that were in it
+          // Layout is cleared so items get fresh positioning in root (same as when moving to folder)
           .map(item => (isFolder && item.folderId === deletedItemId)
-            ? { ...item, folderId: undefined }
+            ? { ...item, folderId: undefined, layout: undefined }
             : item
           ),
       };
@@ -89,12 +90,13 @@ export function eventReducer(state: AgentState, event: WorkspaceEvent): AgentSta
             .map(item => item.id)
         );
         
-        // If any folders were deleted, clear folderId on orphaned items
+        // If any folders were deleted, clear folderId and layout on orphaned items
         // This prevents items from pointing to non-existent folders
+        // Layout is cleared so items get fresh positioning in root (same as when moving to folder)
         const cleanedItems = deletedFolderIds.size > 0
           ? newItems.map(item => 
               item.folderId && deletedFolderIds.has(item.folderId)
-                ? { ...item, folderId: undefined }
+                ? { ...item, folderId: undefined, layout: undefined }
                 : item
             )
           : newItems;
