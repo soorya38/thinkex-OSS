@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { ArrowUp, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,13 +32,21 @@ const PLACEHOLDER_OPTIONS = [
 ];
 
 const baseText = "Create a workspace for ";
-const typewriterStrings = PLACEHOLDER_OPTIONS.map(option => baseText + option);
 
 export function HomePromptInput() {
   const [value, setValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const typewriterRef = useRef<any>(null);
+  const typewriterRef = useRef<ReturnType<typeof import("typewriter-effect").default> | null>(null);
+
+  // Cleanup typewriter on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (typewriterRef.current) {
+        typewriterRef.current.stop();
+      }
+    };
+  }, []);
 
   // Handle user typing - stop animation
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -161,10 +169,10 @@ export function HomePromptInput() {
                 onInit={(typewriter) => {
                   typewriterRef.current = typewriter;
                   
-                  const buildSequence = () => {
-                    // Paste base text instantly (no animation)
-                    typewriter.pasteString(baseText, null);
-                    
+                  // Paste base text instantly (only once, outside the loop)
+                  typewriter.pasteString(baseText, null);
+                  
+                  const cycleOptions = () => {
                     // Cycle through options with animation
                     PLACEHOLDER_OPTIONS.forEach((option, index) => {
                       if (index === 0) {
@@ -177,16 +185,16 @@ export function HomePromptInput() {
                       }
                     });
                     
-                    // After last option, delete it and restart
+                    // After last option, delete it and restart the cycle
                     typewriter
                       .pauseFor(2000)
                       .deleteChars(PLACEHOLDER_OPTIONS[PLACEHOLDER_OPTIONS.length - 1].length)
                       .callFunction(() => {
-                        buildSequence();
+                        cycleOptions();
                       });
                   };
                   
-                  buildSequence();
+                  cycleOptions();
                   typewriter.start();
                 }}
                 options={{
