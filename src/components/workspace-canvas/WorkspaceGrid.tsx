@@ -390,9 +390,11 @@ export function WorkspaceGrid({
   }, [onDragStop, isFiltered, isTemporaryFilter, onGridDragStateChange, onUpdateAllItems, onMoveItem, onMoveItems, selectedCardIds]);
 
   // Handle resize to enforce constraints
+  // Note cards can transition between compact (w=1, h=4) and expanded (w>=2, h>=9) modes
+  // based on EITHER width or height changes, allowing vertical-only resizing to trigger mode switches
   const handleResize = useCallback((layout: Layout, oldItem: LayoutItem | null, newItem: LayoutItem | null, placeholder: LayoutItem | null, e: Event, element: HTMLElement | undefined) => {
     // Enforce custom constraints for YouTube and single-column items
-    if (!newItem) return;
+    if (!newItem || !oldItem) return;
     const itemData = allItemsRef.current.find(i => i.id === newItem.i);
 
     if (itemData) {
@@ -403,12 +405,29 @@ export function WorkspaceGrid({
         else if (newItem.w === 2) newItem.h = 5;
       } else if (itemData.type === 'folder' || itemData.type === 'pdf' || itemData.type === 'flashcard') {
         // Folders, PDFs, and flashcards don't need minimum height enforcement - skip
-      } else if (newItem.w >= 2) {
-        // Enforce larger minimum height for non-YouTube/non-folder/non-PDF cards at width 2+
-        newItem.h = Math.max(newItem.h, 9);
-      } else if (newItem.w === 1 && currentBreakpointRef.current !== 'xxs') {
-        // Auto min height for single column only if not in mobile view (where everything is w=1)
-        newItem.h = 4;
+      } else if (currentBreakpointRef.current !== 'xxs') {
+        // Note cards: handle transitions between compact and expanded modes
+        // Compact mode: w=1, h=4 | Expanded mode: w>=2, h>=9
+        const wasCompact = oldItem.w === 1;
+        const widthChanged = oldItem.w !== newItem.w;
+        
+        // Check for mode transitions triggered by height-only resize
+        if (!widthChanged) {
+          if (wasCompact && newItem.h > 4) {
+            // Growing a compact card taller → expand to wide mode
+            newItem.w = 2;
+          } else if (!wasCompact && newItem.h < 9) {
+            // Shrinking a wide card shorter → collapse to compact mode
+            newItem.w = 1;
+          }
+        }
+        
+        // Apply constraints based on final width
+        if (newItem.w >= 2) {
+          newItem.h = Math.max(newItem.h, 9);
+        } else {
+          newItem.h = 4;
+        }
       }
 
       // Sync placeholder if it exists

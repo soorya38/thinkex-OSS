@@ -86,8 +86,9 @@ function WorkspaceCardNoteContent({ item, isScrollLocked }: { item: Item, isScro
   const hasBlockContent = noteData.blockContent && Array.isArray(noteData.blockContent) && (noteData.blockContent as Block[]).length > 0;
 
 
-  // Create ref for the scrollable container
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // Use state for scroll container so re-render is triggered when element mounts
+  // This fixes the issue where virtualizer initializes with null scroll element
+  const [scrollContainer, setScrollContainer] = useState<HTMLDivElement | null>(null);
 
   // Check if this card is currently being edited in the modal
   // OPTIMIZED: Subscribe to a derived boolean instead of the raw ID
@@ -142,7 +143,7 @@ function WorkspaceCardNoteContent({ item, isScrollLocked }: { item: Item, isScro
   if (displayContent.length > 0) {
     return (
       <div
-        ref={scrollContainerRef}
+        ref={setScrollContainer}
         className="workspace-card-readonly-editor flex-1 min-h-0"
         style={{
           paddingLeft: '0.5rem',
@@ -153,7 +154,7 @@ function WorkspaceCardNoteContent({ item, isScrollLocked }: { item: Item, isScro
         <BlockNotePreview
           blocks={displayContent}
           isScrollLocked={isScrollLocked}
-          scrollParent={scrollContainerRef.current}
+          scrollParent={scrollContainer}
         />
       </div>
     );
