@@ -9,17 +9,24 @@ type FileInfo = { fileUrl: string; filename: string; mediaType: string };
  * Helper function to determine media type from URL
  */
 function getMediaTypeFromUrl(url: string): string {
-    const urlLower = url.toLowerCase();
-    if (urlLower.endsWith('.pdf')) return 'application/pdf';
-    if (urlLower.match(/\.(jpg|jpeg)$/)) return 'image/jpeg';
-    if (urlLower.endsWith('.png')) return 'image/png';
-    if (urlLower.endsWith('.gif')) return 'image/gif';
-    if (urlLower.endsWith('.webp')) return 'image/webp';
-    if (urlLower.endsWith('.svg')) return 'image/svg+xml';
-    if (urlLower.match(/\.(mp4|mov|avi)$/)) return 'video/mp4';
-    if (urlLower.match(/\.(mp3|wav|ogg)$/)) return 'audio/mpeg';
-    if (urlLower.match(/\.(doc|docx)$/)) return 'application/msword';
-    if (urlLower.endsWith('.txt')) return 'text/plain';
+    // Strip query string and fragment before checking extension
+    const urlPath = url.split('?')[0].split('#')[0].toLowerCase();
+
+    if (urlPath.endsWith('.pdf')) return 'application/pdf';
+    if (urlPath.match(/\.(jpg|jpeg)$/)) return 'image/jpeg';
+    if (urlPath.endsWith('.png')) return 'image/png';
+    if (urlPath.endsWith('.gif')) return 'image/gif';
+    if (urlPath.endsWith('.webp')) return 'image/webp';
+    if (urlPath.endsWith('.svg')) return 'image/svg+xml';
+    if (urlPath.endsWith('.mp4')) return 'video/mp4';
+    if (urlPath.endsWith('.mov')) return 'video/quicktime';
+    if (urlPath.endsWith('.avi')) return 'video/x-msvideo';
+    if (urlPath.endsWith('.mp3')) return 'audio/mpeg';
+    if (urlPath.endsWith('.wav')) return 'audio/wav';
+    if (urlPath.endsWith('.ogg')) return 'audio/ogg';
+    if (urlPath.endsWith('.doc')) return 'application/msword';
+    if (urlPath.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    if (urlPath.endsWith('.txt')) return 'text/plain';
     return 'application/octet-stream';
 }
 
@@ -121,10 +128,19 @@ export function createProcessFilesTool() {
                 return "Error: Input must be a valid JSON string.";
             }
 
-            const urlList = parsed.urls || [];
+            // Validate parsed JSON shape
+            if (typeof parsed !== 'object' || parsed === null) {
+                return "Error: Input must be a JSON object with 'urls' array.";
+            }
+
+            const urlList = parsed.urls;
             const instruction = parsed.instruction;
 
-            if (!urlList || urlList.length === 0) {
+            if (!Array.isArray(urlList)) {
+                return "Error: 'urls' must be an array.";
+            }
+
+            if (urlList.length === 0) {
                 return "No file URLs provided";
             }
 

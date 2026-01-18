@@ -33,7 +33,8 @@ function parseFlashcardText(rawInput: any): { title?: string; deckName?: string;
         }
 
         // Extract Front/Back pairs using a pattern that captures content between markers
-        const cardPattern = /Front:\s*([\s\S]*?)(?=\nBack:)\nBack:\s*([\s\S]*?)(?=\n\nFront:|\n*$)/gi;
+        // Fixed regex: use $ end anchor properly to capture last card
+        const cardPattern = /Front:\s*([\s\S]*?)(?=\nBack:)\nBack:\s*([\s\S]*?)(?=\n\nFront:|$)/gi;
         let match;
 
         while ((match = cardPattern.exec(text)) !== null) {
@@ -198,6 +199,32 @@ The deck name will be matched using fuzzy search. Math is supported: use $$...$$
             }
 
             try {
+                // Security: Verify workspace ownership before loading state
+                if (!ctx.userId) {
+                    return { success: false, message: "User not authenticated" };
+                }
+
+                const { db, workspaces } = await import("@/lib/db/client");
+                const { eq } = await import("drizzle-orm");
+
+                const workspace = await db
+                    .select({ userId: workspaces.userId })
+                    .from(workspaces)
+                    .where(eq(workspaces.id, ctx.workspaceId))
+                    .limit(1);
+
+                if (!workspace[0]) {
+                    return { success: false, message: "Workspace not found" };
+                }
+
+                if (workspace[0].userId !== ctx.userId) {
+                    logger.warn(`🔒 [UPDATE-FLASHCARDS] Access denied for user ${ctx.userId} to workspace ${ctx.workspaceId}`);
+                    return {
+                        success: false,
+                        message: "Access denied. You do not have permission to update flashcards in this workspace.",
+                    };
+                }
+
                 const state = await loadWorkspaceState(ctx.workspaceId);
                 const searchName = deckName.toLowerCase().trim();
 

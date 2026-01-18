@@ -21,6 +21,20 @@ export function createNoteTool(ctx: WorkspaceToolContext) {
             "JSON {title, content}. 'content': markdown body. DO NOT repeat title in content. Start with subheadings/text. Math: $$...$$ inline, $$\\n...\\n$$ block. No Mermaid."
         ),
         execute: async ({ title, content }: { title: string; content: string }) => {
+            // Validate inputs before use
+            if (!title || typeof title !== 'string') {
+                return {
+                    success: false,
+                    message: "Title is required and must be a string",
+                };
+            }
+            if (content === undefined || content === null || typeof content !== 'string') {
+                return {
+                    success: false,
+                    message: "Content is required and must be a string",
+                };
+            }
+
             logger.debug("🎯 [ORCHESTRATOR] Delegating to Workspace Worker (create note):", { title, contentLength: content.length });
 
             if (!ctx.workspaceId) {

@@ -21,11 +21,25 @@ export function createProcessUrlsTool() {
                 return "Error: Input must be a valid JSON string.";
             }
 
-            const urlList = parsed.urls || [];
+            // Validate parsed JSON shape
+            if (typeof parsed !== 'object' || parsed === null) {
+                return "Error: Input must be a JSON object with 'urls' array.";
+            }
+
+            const urlList = parsed.urls;
+
+            if (!Array.isArray(urlList)) {
+                return "Error: 'urls' must be an array.";
+            }
+
+            // Validate all items are strings
+            if (!urlList.every((url: unknown) => typeof url === 'string')) {
+                return "Error: All URLs must be strings.";
+            }
 
             logger.debug("🔗 [URL_TOOL] Processing web URLs:", urlList);
 
-            if (!urlList || urlList.length === 0) {
+            if (urlList.length === 0) {
                 return "No URLs provided";
             }
 
