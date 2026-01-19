@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { useRef, useState } from "react";
+import { motion, useScroll, useTransform, useInView } from "motion/react";
 import { FloatingCard, type FloatingCardData } from "./FloatingCard";
 import { type CardColor } from "@/lib/workspace-state/colors";
 import { cn } from "@/lib/utils";
@@ -45,13 +45,18 @@ export function FloatingWorkspaceCards({ bottomGradientHeight = '60%', enablePar
     // Keeping specific shuffle for now to ensure good distribution if we want
     const [cards, setCards] = useState<FloatingCardData[]>(MOCK_CARDS);
 
-    // Parallax effect
+    // Ref for visibility detection
+    const containerRef = useRef<HTMLDivElement>(null);
+    const isInView = useInView(containerRef, { margin: "100px" });
+
+    // Parallax effect - only active when in view for performance
     const { scrollY } = useScroll();
     const yParallax = useTransform(scrollY, [0, 1000], [0, 400]);
-    const y = enableParallax ? yParallax : 0;
+    // Only apply parallax transform when enabled AND in view
+    const y = enableParallax && isInView ? yParallax : 0;
 
     return (
-        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-0">
+        <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-0">
             {/* 
           Masonry Layout using CSS Columns 
           - 2 columns on mobile
