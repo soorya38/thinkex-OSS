@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, useScroll, useTransform } from "motion/react";
 import { FloatingCard, type FloatingCardData } from "./FloatingCard";
 import { type CardColor } from "@/lib/workspace-state/colors";
 
@@ -23,19 +24,23 @@ const MOCK_CARDS: FloatingCardData[] = [
     { type: 'folder', title: 'Project Assets', itemCount: 48, color: '#06B6D4' },
     { type: 'note', title: 'Ideas for Marketing', color: '#F97316' },
     { type: 'pdf', title: 'User_Interview_Script_v2.pdf', color: '#6366F1' },
-    { type: 'flashcard', content: 'Spaced Repetition Algorithm', color: '#14B8A6' },
+    { type: 'folder', title: 'Cognitive Science', itemCount: 24, color: '#14B8A6' },
 
     // Column 4ish
     { type: 'youtube', youtubeUrl: 'https://www.youtube.com/watch?v=VIDEO_ID_3', thumbnailUrl: 'https://i.ytimg.com/vi/ptDyOpfC8wU/sddefault.jpg' },
     { type: 'folder', title: 'Archive 2024', itemCount: 156, color: '#64748B' },
     { type: 'note', title: 'Tech Stack Decision Log', color: '#E11D48' },
-    { type: 'flashcard', content: 'Components of a Neuron', color: '#8B5CF6' },
+    { type: 'folder', title: 'Neurology Resources', itemCount: 18, color: '#8B5CF6' },
 ];
 
 export function FloatingWorkspaceCards() {
     // We can randomize the order on mount if we want, or keep it static for consistency
     // Keeping specific shuffle for now to ensure good distribution if we want
     const [cards, setCards] = useState<FloatingCardData[]>(MOCK_CARDS);
+
+    // Parallax effect
+    const { scrollY } = useScroll();
+    const y = useTransform(scrollY, [0, 1000], [0, 200]); // Moves down 200px for every 1000px scroll (slower upward movement)
 
     return (
         <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-0">
@@ -45,7 +50,10 @@ export function FloatingWorkspaceCards() {
           - 3 columns on tablet
           - 4 columns on desktop
        */}
-            <div className="w-[120%] -ml-[10%] -mt-[5%] columns-2 md:columns-3 lg:columns-6 gap-4 md:gap-6 lg:gap-8 opacity-20 md:opacity-25">
+            <motion.div
+                style={{ y }}
+                className="w-[120%] -ml-[10%] -mt-[5%] columns-2 md:columns-3 lg:columns-6 gap-4 md:gap-6 lg:gap-8 opacity-20 md:opacity-25"
+            >
                 {cards.map((card, index) => (
                     <FloatingCard
                         key={index}
@@ -54,7 +62,7 @@ export function FloatingWorkspaceCards() {
                     />
                 ))}
 
-            </div>
+            </motion.div>
 
             {/* Gradient Overlay for Fade Out */}
             <div
