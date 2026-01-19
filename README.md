@@ -132,7 +132,7 @@ Want to run ThinkEx on your own infrastructure?
     pnpm db:push
     ```
     
-    > **Note:** `db:setup` runs migrations which include database functions required for workspace operations. Use `db:push` only if you plan to create the functions manually via Supabase SQL Editor.
+    > **Note:** `db:setup` runs migrations which include database functions required for workspace operations. Use `db:push` only if you plan to create the functions manually via your database's SQL editor.
 
 5.  **Run the development server:**
     ```bash
