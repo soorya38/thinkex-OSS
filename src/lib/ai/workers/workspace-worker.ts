@@ -180,7 +180,7 @@ export async function workspaceWorker(
             ${event.timestamp}::bigint,
             ${event.userId}::text,
             ${baseVersion}::integer,
-            ${null}::text
+            NULL::text
           ) as result
         `);
 
@@ -308,7 +308,7 @@ export async function workspaceWorker(
               ${event.timestamp}::bigint,
               ${event.userId}::text,
               ${baseVersion}::integer,
-              ${null}::text
+              NULL::text
             ) as result
           `);
                     logger.timeEnd("📝 [UPDATE-NOTE] Append workspace event");
@@ -407,7 +407,7 @@ export async function workspaceWorker(
             ${event.timestamp}::bigint,
             ${event.userId}::text,
             ${baseVersion}::integer,
-            ${null}::text
+            NULL::text
           ) as result
         `);
 
@@ -500,7 +500,7 @@ export async function workspaceWorker(
             ${event.timestamp}::bigint,
             ${event.userId}::text,
             ${baseVersion}::integer,
-            ${null}::text
+            NULL::text
           ) as result
         `);
 
@@ -564,7 +564,7 @@ export async function workspaceWorker(
             ${event.timestamp}::bigint,
             ${event.userId}::text,
             ${baseVersion}::integer,
-            ${null}::text
+            NULL::text
           ) as result
         `);
 
