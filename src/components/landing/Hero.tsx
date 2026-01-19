@@ -63,7 +63,8 @@ export function Hero() {
           {/* Header - Above Video */}
           <div className="space-y-6">
             <h1 className="mt-4 md:mt-12 text-3xl font-normal tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-7xl">
-              The{" "}
+              The Workspace That
+              <br />
               <span className="relative inline-block">
                 <span className="relative px-3 py-0.5 rounded-sm inline-block">
                   <span
@@ -74,10 +75,9 @@ export function Hero() {
                       left: "2px",
                     }}
                   />
-                  <span className="relative z-10">Human Interface</span>
+                  <span className="relative z-10">Thinks With You</span>
                 </span>
-              </span>{" "}
-              for AI
+              </span>
             </h1>
 
             <div className="w-full max-w-2xl mx-auto h-[1.5px] bg-gradient-to-r from-transparent via-muted-foreground/20 to-transparent" />
