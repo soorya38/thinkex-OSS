@@ -259,13 +259,11 @@ export function createUpdateQuizTool(ctx: WorkspaceToolContext) {
 
                 // Update the quiz with new questions
                 // Cast to any since workspaceWorker internal types use questionsToAdd
-                const workerResult = await workspaceWorker("updateQuiz", {
+                await workspaceWorker("updateQuiz", {
                     workspaceId: ctx.workspaceId,
                     itemId: quizId,
                     itemType: "quiz",
-                    quizData: {
-                        questionsToAdd: quizResult.questions,
-                    } as any,
+                    questionsToAdd: quizResult.questions,
                 });
 
                 return {
