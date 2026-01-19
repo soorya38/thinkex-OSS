@@ -1,4 +1,4 @@
-import { vertex } from "@ai-sdk/google-vertex/edge";
+import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { logger } from "@/lib/utils/logger";
 
@@ -11,9 +11,9 @@ export async function codeExecutionWorker(task: string): Promise<string> {
         logger.debug("⚙️ [CODE-WORKER] Starting code execution for:", task);
 
         const result = await generateText({
-            model: vertex("gemini-2.5-flash"),
+            model: google("gemini-2.5-flash"),
             tools: {
-                code_execution: vertex.tools.codeExecution({}),
+                code_execution: google.tools.codeExecution({}),
             },
             prompt: `${task}
 
@@ -27,3 +27,4 @@ Use Python code execution to solve this problem. Show your work and explain the 
         throw error;
     }
 }
+

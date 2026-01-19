@@ -1,4 +1,4 @@
-import { vertex } from "@ai-sdk/google-vertex/edge";
+import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { logger } from "@/lib/utils/logger";
 
@@ -23,7 +23,7 @@ export async function textSelectionWorker(
         };
 
         const result = await generateText({
-            model: vertex("gemini-2.5-flash"),
+            model: google("gemini-2.5-flash"),
             prompt: prompts[action] + (additionalContext ? `\n\nAdditional context: ${additionalContext}` : ""),
         });
 
@@ -34,3 +34,4 @@ export async function textSelectionWorker(
         throw error;
     }
 }
+

@@ -1,4 +1,3 @@
-import { vertex } from "@ai-sdk/google-vertex/edge";
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { logger } from "@/lib/utils/logger";

@@ -22,7 +22,7 @@ Provide a comprehensive answer based on the search results. Include relevant det
         });
 
         // Access grounding metadata for additional context
-        const metadata = providerMetadata?.vertex as GoogleGenerativeAIProviderMetadata | undefined;
+        const metadata = providerMetadata?.google as GoogleGenerativeAIProviderMetadata | undefined;
         const groundingMetadata = metadata?.groundingMetadata;
 
         logger.debug("🔍 [SEARCH-WORKER] Search completed", {
