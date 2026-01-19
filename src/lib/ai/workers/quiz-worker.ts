@@ -1,7 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { logger } from "@/lib/utils/logger";
-import { QuizQuestion, QuizData, QuestionType } from "@/lib/workspace-state/types";
+import { QuizQuestion, QuestionType } from "@/lib/workspace-state/types";
 import { generateItemId } from "@/lib/workspace-state/item-helpers";
 
 export type QuizWorkerParams = {
