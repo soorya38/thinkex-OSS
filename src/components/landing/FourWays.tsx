@@ -97,7 +97,7 @@ export function FourWays() {
                     <h3 className="text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
                       {way.title}
                     </h3>
-                    <ul className="space-y-2 text-base md:text-lg leading-relaxed text-muted-foreground list-disc list-inside pl-1">
+                    <ul className="space-y-2 text-base md:text-lg leading-relaxed text-muted-foreground list-disc list-outside pl-5">
                       {way.bullets.map((bullet, bulletIndex) => (
                         <li key={bulletIndex}>{bullet}</li>
                       ))}
