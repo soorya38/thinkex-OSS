@@ -363,7 +363,7 @@ function formatRichContentSection(richContent: RichContent): string {
     }
 
     lines.push("");
-    lines.push("🎨 RICH CONTENT:");
+    lines.push("RICH CONTENT:");
 
     // Format images
     if (richContent.images.length > 0) {
@@ -491,22 +491,14 @@ ${singleSourceOfTruthWarning}
  * Formats a single selected card with FULL content (no truncation)
  */
 function formatSelectedCardFull(item: Item, index: number): string {
-    const typeEmoji: Record<string, string> = {
-        note: "📝",
-        pdf: "📄",
-        flashcard: "🎴",
-        youtube: "🎥",
-        quiz: "🎯"
-    };
 
-    const emoji = typeEmoji[item.type] || "📄";
 
     const separator = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
 
     const lines = [
         separator,
-        `CARD ${index}: ${emoji} [${item.type.charAt(0).toUpperCase() + item.type.slice(1)}] "${item.name}"`,
-        `⚡ Card ID: ${item.id}  ← USE THIS ID FOR ANY UPDATES TO THIS CARD`,
+        `CARD ${index}: [${item.type.charAt(0).toUpperCase() + item.type.slice(1)}] "${item.name}"`,
+        `Card ID: ${item.id}  ← USE THIS ID FOR ANY UPDATES TO THIS CARD`,
         ""
     ];
 
@@ -515,7 +507,7 @@ function formatSelectedCardFull(item: Item, index: number): string {
         lines.push(`   Subtitle: ${item.subtitle}`);
     }
 
-    lines.push("📄 CONTENT:");
+    lines.push("CONTENT:");
 
     // Add type-specific details with FULL content
     switch (item.type) {
@@ -538,7 +530,7 @@ function formatSelectedCardFull(item: Item, index: number): string {
 
     // Add Metadata Section
     lines.push("");
-    lines.push("🔧 METADATA:");
+    lines.push("METADATA:");
     lines.push(`   Card ID: ${item.id}`);
     lines.push(`   Type: ${item.type}`);
 
@@ -583,8 +575,7 @@ function formatPdfDetailsFull(data: PdfData): string[] {
 
     if (data.fileUrl) {
         lines.push(`   - URL: ${data.fileUrl}`);
-        // Add marker for quiz generation - Gemini can read PDF content directly via URL
-        lines.push(`   - 📖 PDF_CONTENT_URL: ${data.fileUrl}`);
+
     }
 
     if (data.fileSize) {
@@ -735,7 +726,7 @@ function formatQuizDetailsFull(data: QuizData): string[] {
         status = "IN_PROGRESS";
     }
 
-    lines.push(`📊 STATUS: ${status}`);
+    lines.push(`STATUS: ${status}`);
 
     let correctCount = 0;
     let incorrectCount = 0;
@@ -765,7 +756,7 @@ function formatQuizDetailsFull(data: QuizData): string[] {
     // Only show answered questions list for COMPLETED status
     if (status === "COMPLETED" && answeredCount > 0) {
         lines.push("");
-        lines.push("📝 ALL ANSWERS:");
+        lines.push("ALL ANSWERS:");
 
         const answeredMap = new Map<string, boolean>();
         answered.forEach(a => answeredMap.set(a.questionId, a.isCorrect));
@@ -784,7 +775,7 @@ function formatQuizDetailsFull(data: QuizData): string[] {
         const currentQ = questions[currentIndex];
         if (currentQ) {
             lines.push("");
-            lines.push("🎯 CURRENT QUESTION:");
+            lines.push("CURRENT QUESTION:");
             lines.push(`   ${currentIndex + 1}. ${currentQ.questionText}`);
             currentQ.options.forEach((opt, i) => {
                 lines.push(`      ${String.fromCharCode(65 + i)}) ${opt}`);
