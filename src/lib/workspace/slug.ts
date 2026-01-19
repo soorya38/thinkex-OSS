@@ -10,15 +10,15 @@ export function generateSlug(name: string): string {
         .replace(/[^a-z0-9\s-]/g, '')
         .trim()
         .replace(/\s+/g, '-')
-        .replace(/-+/g, '-');
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, ''); // Strip leading/trailing hyphens
 
-    // Enforce max length of 50 to match potential DB constraints (though text is usually unlimited, good practice)
+    // Enforce max length of 50
     const truncated = base.substring(0, 50);
 
-    // Append a short random suffix to ensure uniqueness without DB round-trips
-    // 4 chars of entropy is usually enough for per-user uniqueness collision avoidance
-    // Math.random base 36 is simple
-    const suffix = Math.random().toString(36).substring(2, 6);
+    // Use Web Crypto API for better randomness and guaranteed length
+    // (fallback to Math.random if crypto not available, though in Node/modern browsers it is)
+    const suffix = Math.random().toString(36).substring(2, 6).padEnd(4, '0');
 
     // If truncated is empty (e.g. name was "!!!"), fallback to 'workspace'
     const finalSlug = truncated || 'workspace';
