@@ -84,24 +84,46 @@ async function handlePOST(request: NextRequest) {
   const maxSortOrder = maxSortData[0]?.sortOrder ?? -1;
   const newSortOrder = maxSortOrder + 1;
 
-  // Generate slug
-  const slug = generateSlug(name);
+  // Create workspace with retry logic for slug collisions
+  let workspace;
+  let attempts = 0;
+  const MAX_ATTEMPTS = 5;
 
-  // Create workspace
-  const [workspace] = await db
-    .insert(workspaces)
-    .values({
-      userId: userId,
-      name,
-      description: description || "",
-      template: effectiveTemplate,
-      isPublic: is_public || false,
-      icon: icon || null,
-      color: color || null,
-      sortOrder: newSortOrder,
-      slug,
-    })
-    .returning();
+  while (attempts < MAX_ATTEMPTS) {
+    try {
+      // Generate slug
+      const slug = generateSlug(name);
+
+      [workspace] = await db
+        .insert(workspaces)
+        .values({
+          userId: userId,
+          name,
+          description: description || "",
+          template: effectiveTemplate,
+          isPublic: is_public || false,
+          icon: icon || null,
+          color: color || null,
+          sortOrder: newSortOrder,
+          slug,
+        })
+        .returning();
+
+      break; // Success
+    } catch (error: any) {
+      // Postgres unique constraint violation code is 23505
+      if (error?.code === '23505') {
+        attempts++;
+        if (attempts === MAX_ATTEMPTS) throw error;
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  if (!workspace) {
+    throw new Error("Failed to create workspace after multiple attempts");
+  }
 
   // Create initial state - use custom state if provided, otherwise use template
   let initialState;

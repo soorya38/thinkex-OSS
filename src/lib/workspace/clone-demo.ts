@@ -57,22 +57,43 @@ export async function cloneDemoWorkspace(
         initialState = getTemplateInitialState("blank");
     }
 
-    const slug = generateSlug(name);
+    let workspace;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 5;
 
-    const [workspace] = await db
-        .insert(workspaces)
-        .values({
-            userId,
-            name,
-            description,
-            template: "blank",
-            isPublic: false,
-            icon,
-            color,
-            sortOrder: 0,
-            slug,
-        })
-        .returning();
+    while (attempts < MAX_ATTEMPTS) {
+        try {
+            const slug = generateSlug(name);
+
+            [workspace] = await db
+                .insert(workspaces)
+                .values({
+                    userId,
+                    name,
+                    description,
+                    template: "blank",
+                    isPublic: false,
+                    icon,
+                    color,
+                    sortOrder: 0,
+                    slug,
+                })
+                .returning();
+
+            break; // Success
+        } catch (error: any) {
+            if (error?.code === '23505') {
+                attempts++;
+                if (attempts === MAX_ATTEMPTS) throw error;
+                continue;
+            }
+            throw error;
+        }
+    }
+
+    if (!workspace) {
+        throw new Error("Failed to create workspace after multiple attempts");
+    }
 
     initialState.workspaceId = workspace.id;
 
