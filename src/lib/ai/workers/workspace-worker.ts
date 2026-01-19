@@ -91,24 +91,28 @@ export async function workspaceWorker(
                     }
 
                     // Generate IDs for each card in the deck
-                    const cardsWithIds = await Promise.all(params.flashcardData.cards.map(async (card, index) => {
+                    const cardsWithIdsOrNull = await Promise.all(params.flashcardData.cards.map(async (card, index) => {
                         if (!card || typeof card !== 'object') {
                             logger.error(`❌ [WORKSPACE-WORKER] Invalid card at index ${index}:`, card);
+                            return null; // Skip invalid cards
                         }
 
                         // Parse markdown/math into blocks for the frontend editor
                         // This ensures LaTeX like $$...$$ is converted to inlineMath blocks
-                        const frontBlocks = await markdownToBlocks(card.front);
-                        const backBlocks = await markdownToBlocks(card.back);
+                        const frontBlocks = await markdownToBlocks(card.front || "");
+                        const backBlocks = await markdownToBlocks(card.back || "");
 
                         return {
                             id: generateItemId(),
-                            front: card.front,
-                            back: card.back,
+                            front: card.front || "",
+                            back: card.back || "",
                             frontBlocks,
                             backBlocks
                         };
                     }));
+
+                    // Filter out null entries (invalid cards)
+                    const cardsWithIds = cardsWithIdsOrNull.filter((card): card is NonNullable<typeof card> => card !== null);
 
                     itemData = {
                         cards: cardsWithIds
