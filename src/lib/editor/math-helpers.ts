@@ -19,13 +19,13 @@ export function normalizeMathSyntax(markdown: string): string {
  * Regex pattern for matching Streamdown math: $$...$$
  * Matches $$ delimiters with content in between (non-greedy)
  */
-const MATH_REGEX = /\$\$([^$]+?)\$\$/g;
+const MATH_REGEX = /\$\$([\s\S]+?)\$\$/g;
 
 /**
  * Regex to check if content is ONLY a single math expression (for block math detection)
  * Matches: optional whitespace + $$...$$ + optional whitespace
  */
-const BLOCK_MATH_ONLY_REGEX = /^\s*\$\$([^$]+?)\$\$\s*$/;
+const BLOCK_MATH_ONLY_REGEX = /^\s*\$\$([\s\S]+?)\$\$\s*$/;
 
 /**
  * Converts math in blocks:
