@@ -14,21 +14,21 @@ interface Approach {
 const approaches: Approach[] = [
     {
         icon: MessageSquare,
-        title: "Chat-First Tools",
+        title: "Chat-First",
         description: "ChatGPT, Gemini, Claude",
-        flaw: "Insights vanish into endless scroll. Context resets every conversation.",
+        flaw: "Insights vanish into endless scroll and context resets every conversation.",
     },
     {
         icon: FileText,
-        title: "Notes-First Tools",
+        title: "Notes-First",
         description: "Notion, Obsidian",
-        flaw: "AI is bolted on. Your notes and the AI live in disconnected worlds.",
+        flaw: "AI is bolted on and isolated from your info.",
     },
     {
         icon: Database,
-        title: "Document-First Tools",
+        title: "Retrieval-First",
         description: "NotebookLM",
-        flaw: "Sources vanish behind the interface. You can't see or work with them.",
+        flaw: "Sources are trapped behind the interface where you can't see or work with them.",
     },
 ];
 
