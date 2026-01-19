@@ -148,6 +148,7 @@ export function createQuizTool(ctx: WorkspaceToolContext, convertedMessages: any
                         questions: quizResult.questions,
                         difficulty,
                         sourceCardIds,
+                        sourceCardNames,
                     },
                     folderId: ctx.activeFolderId,
                 });
