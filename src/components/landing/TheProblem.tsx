@@ -90,7 +90,7 @@ export function TheProblem() {
                             ThinkEx is different
                         </h3>
                         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl leading-relaxed">
-                            Nothing disappears into a black box. You see what AI sees and control what it works with. And it&apos;s open source, so you get full transparency, no model lock-in, and a product driven by the community.
+                            Nothing disappears into a black box. You see what AI sees and control what it works with. And it&apos;s <a href="https://github.com/thinkex-oss/thinkex" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-foreground">open source</a>, so you get full transparency, no model lock-in, and a product driven by the community.
                         </p>
                     </div>
                 </div>
