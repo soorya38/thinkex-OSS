@@ -1,6 +1,7 @@
 "use client";
 
 import { Streamdown } from "streamdown";
+import { mermaid } from "@streamdown/mermaid";
 import { useMessagePartText } from "@assistant-ui/react";
 import { useAssistantState } from "@assistant-ui/react";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,7 @@ const MarkdownTextImpl = () => {
         className={cn(
           "streamdown-content size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
         )}
+        plugins={{ mermaid: mermaid }}
         components={{
           ol: ({ children }) => (
             <ol className="ml-4 list-outside list-decimal whitespace-normal">
