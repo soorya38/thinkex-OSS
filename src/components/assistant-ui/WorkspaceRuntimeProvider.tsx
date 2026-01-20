@@ -8,6 +8,8 @@ import { AssistantAvailableProvider } from "@/contexts/AssistantAvailabilityCont
 import { useUIStore } from "@/lib/stores/ui-store";
 import { useSession } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { useWorkspaceState } from "@/hooks/workspace/use-workspace-state";
+import { formatSelectedCardsContext } from "@/lib/utils/format-workspace-context";
 
 interface WorkspaceRuntimeProviderProps {
   workspaceId: string;
@@ -31,6 +33,26 @@ export function WorkspaceRuntimeProvider({
   const selectedCardIdsSet = useUIStore((state) => state.selectedCardIds);
   const replySelections = useUIStore(useShallow((state) => state.replySelections));
   const { data: session } = useSession();
+
+  // Get workspace state to format selected cards context on client
+  const { state: workspaceState } = useWorkspaceState(workspaceId);
+
+  // Format selected cards context on client side (eliminates server-side DB fetch)
+  const selectedCardsContext = useMemo(() => {
+    if (!workspaceState?.items || selectedCardIdsSet.size === 0) {
+      return "";
+    }
+
+    const selectedItems = workspaceState.items.filter((item) =>
+      selectedCardIdsSet.has(item.id)
+    );
+
+    if (selectedItems.length === 0) {
+      return "";
+    }
+
+    return formatSelectedCardsContext(selectedItems, workspaceState.items);
+  }, [workspaceState?.items, selectedCardIdsSet]);
 
   // Create AssistantCloud instance - use anonymous mode for anonymous users
   const cloud = useMemo(() => {
@@ -109,7 +131,7 @@ export function WorkspaceRuntimeProvider({
           workspaceId,
           modelId: selectedModelId,
           activeFolderId,
-          selectedCardIds: Array.from(selectedCardIdsSet),
+          selectedCardsContext, // Pre-formatted context (client-side) instead of IDs
           replySelections,
         },
         headers: {
@@ -117,7 +139,7 @@ export function WorkspaceRuntimeProvider({
         },
       });
       return transport;
-    }, [workspaceId, selectedModelId, activeFolderId, selectedCardIdsSet, replySelections]),
+    }, [workspaceId, selectedModelId, activeFolderId, selectedCardsContext, replySelections]),
     onError: handleChatError,
   });
 

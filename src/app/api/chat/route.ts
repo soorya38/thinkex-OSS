@@ -4,9 +4,6 @@ import { logger } from "@/lib/utils/logger";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { createChatTools } from "@/lib/ai/tools";
-import { loadWorkspaceState } from "@/lib/workspace/state-loader";
-import { formatSelectedCardsContext } from "@/lib/utils/format-workspace-context";
-
 /**
  * Extract workspaceId from system context or request body
  */
@@ -104,36 +101,13 @@ function cleanMessages(messages: any[]): any[] {
 }
 
 /**
- * Build selected cards context from card IDs
- * Fetches workspace state and formats the selected cards for the system prompt
+ * Selected cards context is now formatted on the client side and sent directly.
+ * This eliminates the need for server-side database fetch.
+ * If selectedCardsContext is provided, use it; otherwise return empty string.
  */
-async function buildSelectedCardsContext(
-  workspaceId: string | null,
-  selectedCardIds: string[]
-): Promise<string> {
-  if (!workspaceId || !selectedCardIds || selectedCardIds.length === 0) {
-    return "";
-  }
-
-  try {
-    const state = await loadWorkspaceState(workspaceId);
-    const selectedItems = state.items.filter((item) =>
-      selectedCardIds.includes(item.id)
-    );
-
-    if (selectedItems.length === 0) {
-      return "";
-    }
-
-    return formatSelectedCardsContext(selectedItems, state.items);
-  } catch (error) {
-    logger.error("❌ [CHAT-API] Failed to load selected cards context:", {
-      error: error instanceof Error ? error.message : String(error),
-      workspaceId,
-      selectedCardIds,
-    });
-    return "";
-  }
+function getSelectedCardsContext(body: any): string {
+  // Client now sends pre-formatted context string
+  return body.selectedCardsContext || "";
 }
 
 /**
@@ -223,9 +197,8 @@ export async function POST(req: Request) {
     // Clean messages
     const cleanedMessages = cleanMessages(convertedMessages);
 
-    // Build selected cards context
-    const selectedCardIds = body.selectedCardIds || [];
-    const selectedCardsContext = await buildSelectedCardsContext(workspaceId, selectedCardIds);
+    // Get pre-formatted selected cards context from client (no DB fetch needed)
+    const selectedCardsContext = getSelectedCardsContext(body);
 
     // Build system prompt
     let finalSystemPrompt = buildSystemPrompt(system, fileUrls, urlContextUrls);
