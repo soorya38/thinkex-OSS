@@ -206,7 +206,7 @@ export async function POST(req: Request) {
     const finalSystemPrompt = systemPromptParts.join('');
 
     // Get model
-    const modelId = body.modelId || "gemini-2.5-flash";
+    const modelId = body.modelId || "gemini-3-flash-preview";
     const model = google(modelId);
 
     // Create tools using the modular factory
