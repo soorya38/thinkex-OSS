@@ -42,14 +42,16 @@ export function useAutoOpenMathDialog(
     title: string
 ) {
     const dialogOpenedRef = useRef(false);
+    const onSaveRef = useRef(onSave);
     
-    // Try to get the math edit context (may not be available if provider not wrapped)
-    let mathEdit: ReturnType<typeof useMathEdit> | null = null;
-    try {
-        mathEdit = useMathEdit();
-    } catch {
-        // Context not available - will use legacy approach
-    }
+    // Get the math edit context (may be null if provider not wrapped)
+    // Always call useContext unconditionally to follow Rules of Hooks
+    const mathEdit = useContext(MathEditContext);
+
+    // Keep onSaveRef up to date
+    useEffect(() => {
+        onSaveRef.current = onSave;
+    }, [onSave]);
 
     // Auto-open dialog when a new empty math element is created
     useEffect(() => {
@@ -58,6 +60,8 @@ export function useAutoOpenMathDialog(
         // 2. Math edit context is available
         // 3. LaTeX is empty or just whitespace (newly created element)
         // 4. Dialog hasn't been opened yet for this instance
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        
         if (
             !isReadOnly &&
             mathEdit &&
@@ -66,15 +70,22 @@ export function useAutoOpenMathDialog(
         ) {
             dialogOpenedRef.current = true;
             // Use setTimeout to ensure the dialog opens after the component is fully mounted
-            setTimeout(() => {
+            timeoutId = setTimeout(() => {
                 mathEdit.openDialog({
                     initialLatex: "",
-                    onSave,
+                    onSave: onSaveRef.current,
                     title,
                 });
             }, 0);
         }
-    }, [isReadOnly, mathEdit, latex, onSave, title]);
+
+        // Cleanup: clear timeout if component unmounts or dependencies change
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, [isReadOnly, mathEdit, latex, title]);
 }
 
 // Provider component that renders a single shared MathEditDialog

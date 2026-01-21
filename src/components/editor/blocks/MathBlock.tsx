@@ -69,7 +69,7 @@ const MathBlockContent = memo(function MathBlockContent(props: any) {
     // 2. Math edit context is available
     // 3. LaTeX is empty or just whitespace (newly created block)
     // 4. Dialog hasn't been opened yet for this instance
-    let timeoutId: NodeJS.Timeout | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     
     if (
       !isReadOnly &&

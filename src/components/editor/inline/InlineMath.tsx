@@ -72,7 +72,7 @@ const InlineMathContent = memo(function InlineMathContent({ inlineContent, edito
     // 2. Math edit context is available
     // 3. LaTeX is empty or just whitespace (newly created inline math)
     // 4. Dialog hasn't been opened yet for this instance
-    let timeoutId: NodeJS.Timeout | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     
     if (
       !isReadOnly &&
