@@ -217,7 +217,6 @@ export default function WorkspaceHeader({
         setHoveredBreadcrumbTarget(foundTarget);
       } else {
         setHoveredBreadcrumbTarget(null);
-        setEllipsisDropdownOpen(false);
       }
     };
 
@@ -337,10 +336,7 @@ export default function WorkspaceHeader({
   }, []);
 
   const handleEllipsisMouseLeave = useCallback(() => {
-    // Close when mouse leaves, unless dragging (then close on drag stop)
-    if (!isDraggingRef.current) {
-      setEllipsisDropdownOpen(false);
-    }
+    setEllipsisDropdownOpen(false);
   }, []);
 
   return (
