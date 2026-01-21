@@ -250,9 +250,10 @@ export function WorkspaceGrid({
     // Track which item is being resized (same as drag)
     if (!oldItem) return;
     draggedItemIdRef.current = oldItem.i;
-    // Note: resize doesn't trigger autoscroll, so we don't call onDragStart here
+    // Enable autoscroll during resize to help with grid expansion
+    onDragStart();
     onGridDragStateChange?.(true);
-  }, [onGridDragStateChange]);
+  }, [onDragStart, onGridDragStateChange]);
 
   // Handle drag stop - with RGL v2, this only fires for actual drags (not clicks)
   // Click handling is now done by individual card components via their onClick handlers
@@ -637,7 +638,7 @@ export function WorkspaceGrid({
   }, []);
 
   return (
-    <div className={`${selectedCardIds.size > 0 ? 'pb-20' : ''} size-full workspace-grid-container`} ref={containerRef}>
+    <div className={`${selectedCardIds.size > 0 ? 'pb-20' : ''} w-full workspace-grid-container`} ref={containerRef}>
       <style>{`
         .react-grid-item {
           transition: transform 100ms ease-out !important;

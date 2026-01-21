@@ -342,7 +342,7 @@ export default function WorkspaceContent({
   }
 
   return (
-    <div className={showJsonView ? "h-full w-full" : "flex-1 py-4 overflow-hidden"}>
+    <div className={showJsonView ? "h-full w-full" : "py-4"}>
       {showJsonView ? (
         <div className="h-full w-full">
           <div className="rounded-2xl border shadow-sm bg-transparent h-full w-full overflow-y-auto overflow-x-auto max-md:text-sm">
