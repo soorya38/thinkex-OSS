@@ -42,7 +42,7 @@ export function WorkspaceGrid() {
             type="button"
             onClick={handleCreateNew}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium",
+              "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium mt-2",
               "bg-primary text-primary-foreground",
               "hover:bg-primary/90",
               "transition-colors duration-200",
@@ -61,7 +61,7 @@ export function WorkspaceGrid() {
             const color = workspace.color as CardColor | undefined;
             const bgColor = color ? getCardColorCSS(color, 0.25) : 'var(--card)';
             const borderColor = color ? getCardAccentColor(color, 0.5) : 'var(--sidebar-border)';
-            
+
             return (
               <div
                 key={workspace.id}

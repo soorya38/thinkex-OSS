@@ -1018,11 +1018,26 @@ body.marquee-selecting iframe {
 .react-grid-item.react-draggable-dragging {
   transition: none !important;
   z-index: 1000;
-  opacity: 0.8;
+  opacity: 0.5;
 }
 
 .react-grid-item.react-draggable-dragging * {
   user-select: none;
+}
+
+/* Ensure YouTube and PDF preview cards show opacity during drag */
+/* The data-item-type is on the article element inside the grid item */
+.react-grid-item.react-draggable-dragging article[data-item-type="youtube"],
+.react-grid-item.react-draggable-dragging article[data-item-type="pdf"][data-has-preview="true"] {
+  opacity: 0.5 !important;
+}
+
+/* Ensure iframes and images in YouTube/PDF cards show opacity during drag */
+.react-grid-item.react-draggable-dragging article[data-item-type="youtube"] iframe,
+.react-grid-item.react-draggable-dragging article[data-item-type="youtube"] img,
+.react-grid-item.react-draggable-dragging article[data-item-type="pdf"][data-has-preview="true"] iframe,
+.react-grid-item.react-draggable-dragging article[data-item-type="pdf"][data-has-preview="true"] img {
+  opacity: 0.5 !important;
 }
 
 /* Disable transitions when manually resizing */
@@ -1224,4 +1239,37 @@ body.marquee-selecting iframe {
 body:has(.card-detail-modal) .workspace-grid-container {
   opacity: 0;
   pointer-events: none;
+}
+/* Animated gradient border - rotates colors around the border in a circle */
+@keyframes gradient-rotate {
+  0% { background-position: 0% 0%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+  100% { background-position: 0% 0%; }
+}
+.gradient-border-animated {
+  background: linear-gradient(
+    90deg,
+    #ef444480,
+    #eab30880,
+    #22c55e80,
+    #3b82f680,
+    #a855f780,
+    #ef444480
+  );
+  background-size: 200% 200%;
+  animation: gradient-rotate 10s ease-in-out infinite;
+}
+/* Ensure markdown content in cards looks good */
+.prose {
+  max-width: none;
+}
+.prose p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.prose h1, .prose h2, .prose h3 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
 }

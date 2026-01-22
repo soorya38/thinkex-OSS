@@ -2,8 +2,8 @@ import { z } from "zod";
 import { logger } from "@/lib/utils/logger";
 import { workspaceWorker } from "@/lib/ai/workers";
 import { loadWorkspaceState } from "@/lib/workspace/state-loader";
-import { db, workspaces } from "@/lib/db/client";
-import { eq } from "drizzle-orm";
+import { formatSelectedCardsContext } from "@/lib/utils/format-workspace-context";
+import type { Item } from "@/lib/workspace-state/types";
 
 export interface WorkspaceToolContext {
     workspaceId: string | null;
@@ -16,9 +16,9 @@ export interface WorkspaceToolContext {
  */
 export function createNoteTool(ctx: WorkspaceToolContext) {
     return {
-        description: "Create a note card. returns success message.\n\nCRITICAL CONSTRAINTS:\n1. 'content' MUST NOT start with the title.\n2. Start directly with body text.\n3. Math: use $$...$$ for inline and $$\\n...\\n$$ for block.\n4. NO Mermaid diagrams.",
+        description: "Create a note card. returns success message.\n\nCRITICAL CONSTRAINTS:\n1. 'content' MUST NOT start with the title.\n2. Start directly with body text.\n3. NO Mermaid diagrams.\n\nCRITICAL - MATHEMATICAL EXPRESSIONS: Use LaTeX with DOUBLE DOLLAR SIGNS ($$) for ALL math:\n- Use $$...$$ for ALL math expressions (both inline and block)\n- Single $ is for CURRENCY only (e.g., $19.99). NEVER use single $ for math\n- For inline math: $$E = mc^2$$ (same line as text)\n- For block math (separate lines): Put $$ delimiters on separate lines\n- Always ensure math blocks are properly closed with matching $$",
         inputSchema: z.any().describe(
-            "JSON {title, content}. 'content': markdown body. DO NOT repeat title in content. Start with subheadings/text. Math: $$...$$ inline, $$\\n...\\n$$ block. No Mermaid."
+            "JSON {title, content}. 'content': markdown body. DO NOT repeat title in content. Start with subheadings/text. No Mermaid. Use $$...$$ for ALL math (both inline and block). Single $ is for currency only."
         ),
         execute: async ({ title, content }: { title: string; content: string }) => {
             // Validate inputs before use
@@ -59,9 +59,9 @@ export function createNoteTool(ctx: WorkspaceToolContext) {
  */
 export function createUpdateCardTool(ctx: WorkspaceToolContext) {
     return {
-        description: "Update the content of an existing card. This tool COMPLETELY REPLACES the existing content. You must synthesize the FULL new content by combining the existing card content (from your context) with the user's requested changes. Do not just provide the diff; provide the complete new markdown content.",
+        description: "Update the content of an existing card. This tool COMPLETELY REPLACES the existing content. You must synthesize the FULL new content by combining the existing card content (from your context) with the user's requested changes. Do not just provide the diff; provide the complete new markdown content.\n\nCRITICAL - MATHEMATICAL EXPRESSIONS: Use LaTeX with DOUBLE DOLLAR SIGNS ($$) for ALL math:\n- Use $$...$$ for ALL math expressions (both inline and block)\n- Single $ is for CURRENCY only (e.g., $19.99). NEVER use single $ for math\n- For inline math: $$E = mc^2$$ (same line as text)\n- For block math (separate lines): Put $$ delimiters on separate lines\n- Always ensure math blocks are properly closed with matching $$\n- Add spaces around $$ symbols when math appears in lists or tables\n- Do not place punctuation immediately after math expressions.",
         inputSchema: z.any().describe(
-            "A JSON object with 'id' (string) and 'markdown' (string) or 'content' (string) fields. The 'id' uniquely identifies the note to update. The 'markdown' or 'content' field contains the full note body ONLY (do not include the title as a header). The markdown may include LaTeX math: use $$...$$ for inline math (with proper spacing) and $$...$$ for display math. Ensure math inside lists and tables has spaces around the $$ symbols. Do not place punctuation immediately after math expressions."
+            "A JSON object with 'id' (string) and 'markdown' (string) or 'content' (string) fields. The 'id' uniquely identifies the note to update. The 'markdown' or 'content' field contains the full note body ONLY (do not include the title as a header). Use $$...$$ for ALL math (both inline and block). Single $ is for currency only. Ensure math inside lists and tables has spaces around the $$ symbols. Do not place punctuation immediately after math expressions."
         ),
         execute: async (input: any) => {
             logger.group("🎯 [UPDATE-CARD] Tool execution started", true);
@@ -195,98 +195,94 @@ export function createDeleteCardTool(ctx: WorkspaceToolContext) {
 export function createSelectCardsTool(ctx: WorkspaceToolContext) {
     return {
         description:
-            "Select one or more cards by their TITLES and add them to the conversation context. This tool helps you surface specific cards when the user refers to them. The tool will find the best matching cards for the titles you provide and add them to the system context.",
+            "Select one or more cards by their TITLES and add them to the conversation context. This tool helps you surface specific cards when the user refers to them. The tool will perform fuzzy matching to find the best matching cards and return their full content immediately.",
         inputSchema: z.object({
             cardTitles: z.array(z.string()).describe("Array of card titles to search for and select"),
         }),
         execute: async (input: { cardTitles: string[] }) => {
             const { cardTitles } = input;
 
-            if (!ctx.workspaceId) {
-                return {
-                    success: false,
-                    message: "No workspace context available",
-                };
-            }
-
             if (!cardTitles || cardTitles.length === 0) {
                 return {
                     success: false,
                     message: "cardTitles array must be provided and non-empty.",
+                    context: "",
+                };
+            }
+
+            if (!ctx.workspaceId) {
+                return {
+                    success: false,
+                    message: "No workspace context available",
+                    context: "",
                 };
             }
 
             try {
-                if (!ctx.userId) {
-                    return { success: false, message: "User not authenticated" };
-                }
-
-                const workspace = await db
-                    .select({ userId: workspaces.userId })
-                    .from(workspaces)
-                    .where(eq(workspaces.id, ctx.workspaceId))
-                    .limit(1);
-
-                if (!workspace[0]) {
-                    return { success: false, message: "Workspace not found" };
-                }
-
-                if (workspace[0].userId !== ctx.userId) {
-                    logger.warn(`🔒 [SELECT-CARDS] Access denied for user ${ctx.userId} to workspace ${ctx.workspaceId}`);
+                // Load workspace state to access all items
+                const state = await loadWorkspaceState(ctx.workspaceId);
+                
+                if (!state || !state.items || state.items.length === 0) {
                     return {
-                        success: false,
-                        message: "Access denied. You do not have permission to view cards in this workspace.",
+                        success: true,
+                        message: `No cards found in workspace. Requested selection of ${cardTitles.length} card${cardTitles.length === 1 ? "" : "s"}: ${cardTitles.join(", ")}.`,
+                        addedCount: 0,
+                        context: "",
                     };
                 }
 
-                const state = await loadWorkspaceState(ctx.workspaceId);
-                const foundCardIds = new Set<string>();
-                const notFoundTitles: string[] = [];
+                // Perform fuzzy matching (matching client-side logic)
+                // 1. Exact match first
+                // 2. Contains match if no exact match
+                const selectedItems: Item[] = [];
+                const processedIds = new Set<string>();
 
-                cardTitles.forEach(title => {
+                for (const title of cardTitles) {
                     const searchTitle = title.toLowerCase().trim();
-                    let match = state.items.find(item => item.name.toLowerCase().trim() === searchTitle);
-
+                    
+                    // Try exact match first
+                    let match = state.items.find(
+                        item => item.name.toLowerCase().trim() === searchTitle && !processedIds.has(item.id)
+                    );
+                    
+                    // If no exact match, try contains match
                     if (!match) {
-                        match = state.items.find(item => item.name.toLowerCase().includes(searchTitle));
+                        match = state.items.find(
+                            item => item.name.toLowerCase().includes(searchTitle) && !processedIds.has(item.id)
+                        );
                     }
 
                     if (match) {
-                        foundCardIds.add(match.id);
-                    } else {
-                        notFoundTitles.push(title);
+                        selectedItems.push(match);
+                        processedIds.add(match.id);
                     }
-                });
-
-                const validCardIds = Array.from(foundCardIds);
-
-                if (validCardIds.length === 0) {
-                    const availableCards = state.items.map(i => `"${i.name}"`).join(", ");
-                    return {
-                        success: false,
-                        message: `No cards found matching your request. ${notFoundTitles.length > 0 ? `Could not find: ${notFoundTitles.join(", ")}. ` : ""}Available cards: ${availableCards}`,
-                        cardContent: "",
-                    };
                 }
 
-                const selectedCards = state.items.filter((item) =>
-                    validCardIds.includes(item.id)
-                );
+                // Format the selected cards context
+                const context = formatSelectedCardsContext(selectedItems, state.items);
 
-                const message = `Selected ${selectedCards.length} card${selectedCards.length === 1 ? "" : "s"}. ${notFoundTitles.length > 0 ? `(Could not find: ${notFoundTitles.join(", ")}) ` : ""}NOTE: This selection was made at the time of this tool call. For the current active selection, checking the 'CARDS IN CONTEXT DRAWER' section in your system context is recommended.`;
+                const addedCount = selectedItems.length;
+                const notFoundCount = cardTitles.length - addedCount;
+
+                let message = `Selected ${addedCount} card${addedCount === 1 ? "" : "s"}`;
+                if (notFoundCount > 0) {
+                    message += ` (${notFoundCount} not found)`;
+                }
+                message += `: ${selectedItems.map(item => item.name).join(", ")}`;
 
                 return {
                     success: true,
                     message,
-                    selectedCount: selectedCards.length,
-                    selectedCardNames: selectedCards.map((c) => c.name),
-                    selectedCardIds: selectedCards.map((c) => c.id),
+                    addedCount,
+                    context, // Return formatted context so AI has immediate access
+                    cardTitles: cardTitles,
                 };
-            } catch (error) {
-                logger.error("Error loading cards for selectCards tool:", error);
+            } catch (error: any) {
+                logger.error("❌ [SELECT-CARDS] Error loading workspace state:", error);
                 return {
                     success: false,
-                    message: `Error selecting cards: ${error instanceof Error ? error.message : "Unknown error"}`,
+                    message: `Failed to load workspace state: ${error?.message || String(error)}`,
+                    context: "",
                 };
             }
         },

@@ -8,11 +8,15 @@ import { AssistantAvailableProvider } from "@/contexts/AssistantAvailabilityCont
 import { useUIStore } from "@/lib/stores/ui-store";
 import { useSession } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { useWorkspaceState } from "@/hooks/workspace/use-workspace-state";
+import { formatSelectedCardsContext } from "@/lib/utils/format-workspace-context";
 
 interface WorkspaceRuntimeProviderProps {
   workspaceId: string;
   children: React.ReactNode;
 }
+
+import { useShallow } from "zustand/react/shallow";
 
 export function WorkspaceRuntimeProvider({
   workspaceId,
@@ -21,7 +25,34 @@ export function WorkspaceRuntimeProvider({
 
   const selectedModelId = useUIStore((state) => state.selectedModelId);
   const activeFolderId = useUIStore((state) => state.activeFolderId);
+  /* 
+    FIX for "Maximum update depth exceeded":
+    We select the Set directly because Array.from() inside the selector creates a new reference on every render,
+    triggering an infinite update loop. The Set reference is stable until changed.
+  */
+  const selectedCardIdsSet = useUIStore((state) => state.selectedCardIds);
+  const replySelections = useUIStore(useShallow((state) => state.replySelections));
   const { data: session } = useSession();
+
+  // Get workspace state to format selected cards context on client
+  const { state: workspaceState } = useWorkspaceState(workspaceId);
+
+  // Format selected cards context on client side (eliminates server-side DB fetch)
+  const selectedCardsContext = useMemo(() => {
+    if (!workspaceState?.items || selectedCardIdsSet.size === 0) {
+      return "";
+    }
+
+    const selectedItems = workspaceState.items.filter((item) =>
+      selectedCardIdsSet.has(item.id)
+    );
+
+    if (selectedItems.length === 0) {
+      return "";
+    }
+
+    return formatSelectedCardsContext(selectedItems, workspaceState.items);
+  }, [workspaceState?.items, selectedCardIdsSet]);
 
   // Create AssistantCloud instance - use anonymous mode for anonymous users
   const cloud = useMemo(() => {
@@ -100,13 +131,15 @@ export function WorkspaceRuntimeProvider({
           workspaceId,
           modelId: selectedModelId,
           activeFolderId,
+          selectedCardsContext, // Pre-formatted context (client-side) instead of IDs
+          replySelections,
         },
         headers: {
           // Headers for static context if needed
         },
       });
       return transport;
-    }, [workspaceId, selectedModelId, activeFolderId]),
+    }, [workspaceId, selectedModelId, activeFolderId, selectedCardsContext, replySelections]),
     onError: handleChatError,
   });
 

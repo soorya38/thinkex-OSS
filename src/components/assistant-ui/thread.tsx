@@ -56,6 +56,8 @@ import {
 import Link from "next/link";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
+import { CreateQuizToolUI } from "@/components/assistant-ui/CreateQuizToolUI";
+import { UpdateQuizToolUI } from "@/components/assistant-ui/UpdateQuizToolUI";
 import { CreateNoteToolUI } from "@/components/assistant-ui/CreateNoteToolUI";
 import { CreateFlashcardToolUI } from "@/components/assistant-ui/CreateFlashcardToolUI";
 import { UpdateFlashcardToolUI } from "@/components/assistant-ui/UpdateFlashcardToolUI";
@@ -93,22 +95,13 @@ import { extractUrls, createUrlFile } from "@/lib/attachments/url-utils";
 import { filterItems } from "@/lib/workspace-state/search";
 import { useSession } from "@/lib/auth-client";
 import { formatSelectedCardsContext } from "@/lib/utils/format-workspace-context";
-import {
-  ModelSelector,
-  ModelSelectorTrigger,
-  ModelSelectorContent,
-  ModelSelectorInput,
-  ModelSelectorList,
-  ModelSelectorEmpty,
-  ModelSelectorGroup,
-  ModelSelectorItem,
-  ModelSelectorName,
-} from "@/components/ai-elements/model-selector";
+import { focusComposerInput } from "@/lib/utils/composer-utils";
 import { SpeechToTextButton } from "@/components/assistant-ui/SpeechToTextButton";
 
 // Available AI models
 const AI_MODELS = [
   { id: "gemini-3-pro-preview", name: "Gemini 3 Pro", description: "Latest preview model" },
+  { id: "gemini-3-flash-preview", name: "Gemini 3 Flash", description: "Latest fast preview model" },
   { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", description: "Powerful & reliable" },
   { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", description: "Fast & efficient" },
 ];
@@ -124,6 +117,8 @@ export const Thread: FC<ThreadProps> = ({ items = [] }) => {
     <LazyMotion features={domAnimation}>
       <MotionConfig reducedMotion="user">
         {/* Register tool UI - this component mounts and registers the UI with the assistant runtime */}
+        <CreateQuizToolUI />
+        <UpdateQuizToolUI />
         <CreateNoteToolUI />
         <CreateFlashcardToolUI />
         <UpdateFlashcardToolUI />
@@ -530,6 +525,13 @@ const Composer: FC<ComposerProps> = ({ items }) => {
   return (
     <ComposerPrimitive.Root
       className="aui-composer-root relative flex w-full flex-col rounded-lg border border-sidebar-border bg-sidebar-accent px-1 pt-1 shadow-[0_9px_9px_0px_rgba(0,0,0,0.01),0_2px_5px_0px_rgba(0,0,0,0.06)] dark:border-sidebar-border/15"
+      onClick={(e) => {
+        // Focus the input when clicking anywhere in the composer area
+        // This allows users to easily return focus after interacting with quizzes or other cards
+        if (inputRef.current && !e.defaultPrevented) {
+          inputRef.current.focus();
+        }
+      }}
       onSubmit={async (e) => {
         e.preventDefault();
 
@@ -629,19 +631,6 @@ const Composer: FC<ComposerProps> = ({ items }) => {
         // Combine all context: selected cards, reply texts, and user message
         let modifiedText = currentText;
 
-        // Add selected cards context with markers (no UI representation, but sent to LLM)
-        // Always append this so LLM knows the selection state (even when nothing is selected)
-        const cardsContext = formatSelectedCardsContext(selectedItems, items);
-        const cardsMarker = "[[SELECTED_CARDS_MARKER]]";
-        modifiedText = modifiedText + `\n\n${cardsMarker}${cardsContext}${cardsMarker}`;
-
-        // Add reply texts with pipe separator if there are replies
-        if (replySelections.length > 0) {
-          const replyTexts = replySelections.map(sel => sel.text).join('|');
-          const specialMarker = "[[REPLY_MARKER]]";
-          modifiedText = modifiedText + `\n\n${specialMarker}${replyTexts}${specialMarker}`;
-        }
-
         // Set the modified text and send
         api.composer().setText(modifiedText);
         api.composer().send();
@@ -717,7 +706,7 @@ const ComposerAction: FC<ComposerActionProps> = ({ items }) => {
   const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false);
 
   const selectedModel = useMemo(
-    () => AI_MODELS.find((m) => m.id === selectedModelId) || AI_MODELS[2],
+    () => AI_MODELS.find((m) => m.id === selectedModelId) || AI_MODELS[1],
     [selectedModelId]
   );
 
@@ -794,12 +783,7 @@ const ComposerAction: FC<ComposerActionProps> = ({ items }) => {
     item?.onClick?.();
 
     // Focus the composer input after action selection
-    setTimeout(() => {
-      const composerInput = document.querySelector('.aui-composer-input') as HTMLTextAreaElement | null;
-      if (composerInput) {
-        composerInput.focus();
-      }
-    }, 100);
+    focusComposerInput();
   };
 
   const isActionSelected = (itemId: string) => selectedIds.includes(itemId);
@@ -815,7 +799,11 @@ const ComposerAction: FC<ComposerActionProps> = ({ items }) => {
           <ComposerAddAttachment />
         </div>
         {/* Actions Button */}
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={(open) => {
+          if (!open) {
+            focusComposerInput();
+          }
+        }}>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
@@ -856,46 +844,59 @@ const ComposerAction: FC<ComposerActionProps> = ({ items }) => {
           </DropdownMenuContent>
         </DropdownMenu>
         {/* Model Selector Button */}
-        <ModelSelector open={isModelSelectorOpen} onOpenChange={setIsModelSelectorOpen}>
-          <ModelSelectorTrigger asChild>
+        <DropdownMenu open={isModelSelectorOpen} onOpenChange={(open) => {
+          setIsModelSelectorOpen(open);
+          if (!open) {
+            focusComposerInput();
+          }
+        }}>
+          <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="flex items-center gap-1.5 px-1 py-1 rounded-md bg-sidebar-accent hover:bg-accent transition-colors flex-shrink-0 text-xs font-normal text-muted-foreground hover:text-foreground cursor-pointer"
+              className="flex items-center gap-1.5 px-1.5 py-1 rounded-md bg-sidebar-accent hover:bg-accent transition-colors flex-shrink-0 text-xs font-normal text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <LuSparkle className="w-3.5 h-3.5" />
               <span>{selectedModel.name}</span>
             </button>
-          </ModelSelectorTrigger>
-          <ModelSelectorContent className="sm:max-w-[300px]">
-            <ModelSelectorInput placeholder="Search models..." />
-            <ModelSelectorList>
-              <ModelSelectorEmpty>No models found.</ModelSelectorEmpty>
-              <ModelSelectorGroup heading="Gemini Models">
-                {AI_MODELS.map((model) => (
-                  <ModelSelectorItem
-                    key={model.id}
-                    value={model.id}
-                    onSelect={() => {
-                      setSelectedModelId(model.id);
-                      setIsModelSelectorOpen(false);
-                    }}
-                    className={cn(
-                      "cursor-pointer",
-                      selectedModelId === model.id && "bg-accent"
-                    )}
-                  >
-                    <ModelSelectorName>{model.name}</ModelSelectorName>
-                    <span className="text-xs text-muted-foreground">{model.description}</span>
-                  </ModelSelectorItem>
-                ))}
-              </ModelSelectorGroup>
-            </ModelSelectorList>
-          </ModelSelectorContent>
-        </ModelSelector>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" side="top" className="w-48 max-h-80 overflow-y-auto" onCloseAutoFocus={(e) => e.preventDefault()}>
+            {AI_MODELS.map((model) => {
+              const isSelected = selectedModelId === model.id;
+              return (
+                <DropdownMenuItem
+                  key={model.id}
+                  onClick={() => {
+                    setSelectedModelId(model.id);
+                    setIsModelSelectorOpen(false);
+                    focusComposerInput();
+                  }}
+                  title={model.description}
+                  aria-label={model.description ?? model.name}
+                  className={cn(
+                    "cursor-pointer",
+                    isSelected && "bg-accent/50"
+                  )}
+                >
+                  {isSelected ? (
+                    <FaCheck className="size-3.5 text-sidebar-foreground/80" />
+                  ) : (
+                    <LuSparkle className="size-3.5" />
+                  )}
+                  <span>{model.name}</span>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
         {/* Warning icon for anonymous users */}
         {isAnonymous && (
 
-          <Popover open={isWarningPopoverOpen} onOpenChange={setIsWarningPopoverOpen}>
+          <Popover open={isWarningPopoverOpen} onOpenChange={(open) => {
+            setIsWarningPopoverOpen(open);
+            if (!open) {
+              focusComposerInput();
+            }
+          }}>
             <PopoverTrigger asChild>
               <button
                 type="button"

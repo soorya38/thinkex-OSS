@@ -14,21 +14,21 @@ interface Approach {
 const approaches: Approach[] = [
     {
         icon: MessageSquare,
-        title: "Chat-First Tools",
+        title: "Chat-First",
         description: "ChatGPT, Gemini, Claude",
-        flaw: "Insights vanish into endless scroll. Context resets every conversation.",
+        flaw: "Insights vanish into endless scroll and context resets every conversation.",
     },
     {
         icon: FileText,
-        title: "Notes-First Tools",
+        title: "Notes-First",
         description: "Notion, Obsidian",
-        flaw: "AI is bolted on. Your notes and the AI live in disconnected worlds.",
+        flaw: "AI is bolted on and isolated from your info.",
     },
     {
         icon: Database,
-        title: "Document-First Tools",
+        title: "Retrieval-First",
         description: "NotebookLM",
-        flaw: "Sources vanish behind the interface. You can't see or work with them.",
+        flaw: "Sources are trapped behind the interface where you can't see or work with them.",
     },
 ];
 
@@ -90,7 +90,7 @@ export function TheProblem() {
                             ThinkEx is different
                         </h3>
                         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl leading-relaxed">
-                            Nothing disappears into a black box. You see what AI sees and control what it works with. And it&apos;s open source, so you get full transparency, no model lock-in, and a product driven by the community.
+                            Nothing disappears into a black box. You see what AI sees and control what it works with. And it&apos;s <a href="https://github.com/thinkex-oss/thinkex" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-foreground">open source</a>, so you get full transparency, no model lock-in, and a product driven by the community.
                         </p>
                     </div>
                 </div>

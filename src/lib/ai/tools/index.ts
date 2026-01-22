@@ -16,6 +16,7 @@ import {
     type WorkspaceToolContext,
 } from "./workspace-tools";
 import { createFlashcardsTool, createUpdateFlashcardsTool } from "./flashcard-tools";
+import { createQuizTool, createUpdateQuizTool } from "./quiz-tools";
 import { createDeepResearchTool } from "./deep-research";
 import { logger } from "@/lib/utils/logger";
 
@@ -63,6 +64,10 @@ export function createChatTools(config: ChatToolsConfig): Record<string, any> {
         // Flashcards
         createFlashcards: createFlashcardsTool(ctx),
         updateFlashcards: createUpdateFlashcardsTool(ctx),
+
+        // Quizzes
+        createQuiz: createQuizTool(ctx),
+        updateQuiz: createUpdateQuizTool(ctx),
 
         // Deep research
         deepResearch: createDeepResearchTool(ctx),

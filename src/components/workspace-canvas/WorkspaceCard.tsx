@@ -1,4 +1,5 @@
-import { MoreVertical, Trash2, Palette, CheckCircle2, FolderInput, FileText, Copy, X } from "lucide-react";
+import { QuizContent } from "./QuizContent";
+import { MoreVertical, Trash2, Palette, CheckCircle2, FolderInput, FileText, Copy, X, Pencil } from "lucide-react";
 import { PiMouseScrollFill, PiMouseScrollBold } from "react-icons/pi";
 import { useCallback, useState, memo, useRef, useEffect, useMemo } from "react";
 import { toast } from "sonner";
@@ -50,6 +51,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import MoveToDialog from "@/components/modals/MoveToDialog";
+import RenameDialog from "@/components/modals/RenameDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -203,6 +205,7 @@ function WorkspaceCard({
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   // Get scroll lock state from Zustand store (persists across interactions)
   const isScrollLocked = useUIStore(selectItemScrollLocked(item.id));
@@ -318,7 +321,12 @@ function WorkspaceCard({
     onDeleteItem(item.id);
     setShowDeleteDialog(false);
     toast.success("Card deleted successfully");
-  }, [item.id, onDeleteItem, item.name]);
+  }, [item.id, onDeleteItem, item.name, posthog]);
+
+  const handleRename = useCallback((newName: string) => {
+    onUpdateItem(item.id, { name: newName });
+    toast.success("Card renamed");
+  }, [item.id, onUpdateItem]);
 
   // Handle copying note content as markdown
   const handleCopyMarkdown = useCallback(() => {
@@ -512,6 +520,13 @@ function WorkspaceCard({
       }
     }
 
+    // Prevent opening modal for quiz cards as they are interactive
+    if (item.type === 'quiz') {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
     // For YouTube cards, handle click to play
     if (item.type === 'youtube') {
       // If we got here, it wasn't a drag (checked above)
@@ -677,6 +692,10 @@ function WorkspaceCard({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenuItem onSelect={() => setShowRenameDialog(true)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    <span>Rename</span>
+                  </DropdownMenuItem>
                   {onMoveItem && (
                     <>
                       <DropdownMenuItem onSelect={() => setShowMoveDialog(true)}>
@@ -746,18 +765,19 @@ function WorkspaceCard({
                   onNameChange={handleNameChange}
                   onNameCommit={handleNameCommit}
                   onSubtitleChange={handleSubtitleChange}
-                  readOnly={(item.type === 'note' || item.type === 'pdf') && !shouldShowPreview}
+                  readOnly={(item.type === 'note' || item.type === 'pdf' || item.type === 'quiz') && !shouldShowPreview}
                   noMargin={true}
                   onTitleFocus={handleTitleFocus}
                   onTitleBlur={handleTitleBlur}
-                  allowWrap={(item.type === 'note' || item.type === 'pdf') && !shouldShowPreview}
+                  allowWrap={(item.type === 'note' || item.type === 'pdf' || item.type === 'quiz') && !shouldShowPreview}
                 />
               )
               }
               {/* Subtle type label for narrow cards without preview */}
-              {(item.type === 'note' || item.type === 'pdf') && !shouldShowPreview && (
+              {/* Subtle type label for narrow cards without preview */}
+              {(item.type === 'note' || item.type === 'pdf' || item.type === 'quiz') && !shouldShowPreview && (
                 <span className="text-[10px] uppercase tracking-wider text-white/40 mt-auto">
-                  {item.type === 'note' ? 'Note' : 'PDF'}
+                  {item.type === 'note' ? 'Note' : item.type === 'pdf' ? 'PDF' : 'Quiz'}
                 </span>
               )}
             </div>
@@ -795,6 +815,20 @@ function WorkspaceCard({
               );
             })()}
 
+            {/* Quiz Content - render interactive quiz */}
+            {item.type === 'quiz' && shouldShowPreview && (
+              <div
+                className="flex-1 min-h-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <QuizContent
+                  item={item}
+                  onUpdateData={(updater) => onUpdateItem(item.id, { data: updater(item.data) as any })}
+                  isScrollLocked={isScrollLocked}
+                />
+              </div>
+            )}
+
             {/* Flashcard Content - render interactive flashcard */}
             {item.type === 'flashcard' && (() => {
               const flashcardData = item.data as FlashcardData;
@@ -815,7 +849,7 @@ function WorkspaceCard({
                       return block.content
                         .map((item: any) => {
                           if (item.type === "inlineMath" && item.props?.latex) {
-                            return `$${item.props.latex}$`;
+                            return `$$${item.props.latex}$$`;
                           }
                           return item.text || "";
                         })
@@ -961,6 +995,15 @@ function WorkspaceCard({
             </AlertDialogContent>
           </AlertDialog>
 
+          {/* Rename Dialog */}
+          <RenameDialog
+            open={showRenameDialog}
+            onOpenChange={setShowRenameDialog}
+            currentName={item.name || "Untitled"}
+            itemType={item.type}
+            onRename={handleRename}
+          />
+
           {/* Move to Dialog */}
           {onMoveItem && (
             <MoveToDialog
@@ -978,10 +1021,14 @@ function WorkspaceCard({
             />
           )}
         </div>
-      </ContextMenuTrigger >
+      </ContextMenuTrigger>
 
       {/* Right-Click Context Menu */}
-      < ContextMenuContent className="w-48" >
+      <ContextMenuContent className="w-48">
+        <ContextMenuItem onSelect={() => setShowRenameDialog(true)}>
+          <Pencil className="mr-2 h-4 w-4" />
+          <span>Rename</span>
+        </ContextMenuItem>
         {onMoveItem && (
           <>
             <ContextMenuItem onSelect={() => setShowMoveDialog(true)}>
@@ -1015,9 +1062,9 @@ function WorkspaceCard({
           <Trash2 className="mr-2 h-4 w-4" />
           <span>Delete</span>
         </ContextMenuItem>
-      </ContextMenuContent >
+      </ContextMenuContent>
 
-    </ContextMenu >
+    </ContextMenu>
   );
 }
 
@@ -1047,6 +1094,11 @@ export const WorkspaceCardMemoized = memo(WorkspaceCard, (prevProps, nextProps) 
     if (JSON.stringify(prevData) !== JSON.stringify(nextData)) return false;
   }
   if (prevProps.item.type === 'youtube' && nextProps.item.type === 'youtube') {
+    const prevData = prevProps.item.data;
+    const nextData = nextProps.item.data;
+    if (JSON.stringify(prevData) !== JSON.stringify(nextData)) return false;
+  }
+  if (prevProps.item.type === 'quiz' && nextProps.item.type === 'quiz') {
     const prevData = prevProps.item.data;
     const nextData = nextProps.item.data;
     if (JSON.stringify(prevData) !== JSON.stringify(nextData)) return false;

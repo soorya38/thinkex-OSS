@@ -5,6 +5,11 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { createChatTools } from "@/lib/ai/tools";
 
+// Regex patterns as constants (compiled once, reused for all requests)
+const URL_CONTEXT_REGEX = /\[URL_CONTEXT:(.+?)\]/g;
+const DIRECT_URL_REGEX = /https?:\/\/[^\s]+/g;
+const FILE_URL_REGEX = /\[FILE_URL:([^|]+)\|mediaType:([^|]*)\|filename:([^\]]*)\]/g;
+
 /**
  * Extract workspaceId from system context or request body
  */
@@ -23,74 +28,52 @@ function extractWorkspaceId(body: any): string | null {
 }
 
 /**
- * Extract file URLs from FILE_URL markers in messages
+ * Process messages in a single pass: extract file URLs, URL context URLs, and clean markers
+ * This combines 3 separate iterations into 1 for better performance
  */
-function extractFileUrls(messages: any[]): string[] {
+function processMessages(messages: any[]): {
+  fileUrls: string[];
+  urlContextUrls: string[];
+  cleanedMessages: any[];
+} {
   const fileUrls: string[] = [];
+  const urlContextUrlsSet = new Set<string>();
 
-  messages.forEach((message) => {
-    if (message.content && Array.isArray(message.content)) {
-      message.content.forEach((part: any) => {
-        if (part.type === "text" && typeof part.text === "string") {
-          // Create regex inside loop to reset lastIndex state for each iteration
-          const fileUrlRegex = /\[FILE_URL:([^|]+)\|mediaType:([^|]*)\|filename:([^\]]*)\]/g;
-          let match;
-          while ((match = fileUrlRegex.exec(part.text)) !== null) {
-            fileUrls.push(match[1]);
-          }
-        }
-      });
-    }
-  });
-
-  return fileUrls;
-}
-
-/**
- * Extract URLs from URL_CONTEXT markers and direct URLs in messages
- */
-function extractUrlContextUrls(messages: any[]): string[] {
-  const urlContextUrls: string[] = [];
-
-  messages.forEach((message) => {
-    if (message.content && Array.isArray(message.content)) {
-      message.content.forEach((part: any) => {
-        if (part.type === "text" && typeof part.text === "string") {
-          // Look for [URL_CONTEXT:...] markers
-          const urlMatches = part.text.matchAll(/\[URL_CONTEXT:(.+?)\]/g);
-          for (const match of urlMatches) {
-            const url = match[1];
-            if (url && !urlContextUrls.includes(url)) {
-              urlContextUrls.push(url);
-            }
-          }
-          // Also look for direct URLs in text
-          const directUrlMatches = part.text.matchAll(/https?:\/\/[^\s]+/g);
-          for (const match of directUrlMatches) {
-            const url = match[0];
-            if (url && !urlContextUrls.includes(url)) {
-              urlContextUrls.push(url);
-            }
-          }
-        }
-      });
-    }
-  });
-
-  return urlContextUrls;
-}
-
-/**
- * Clean URL_CONTEXT markers from messages
- */
-function cleanMessages(messages: any[]): any[] {
-  return messages.map((message) => {
+  const cleanedMessages = messages.map((message) => {
     if (message.content && Array.isArray(message.content)) {
       const updatedContent = message.content.map((part: any) => {
         if (part.type === "text" && typeof part.text === "string") {
-          const updatedText = part.text.replace(/\[URL_CONTEXT:(.+?)\]/g, (_match: string, url: string) => {
+          const text = part.text;
+
+          // Extract file URLs (create new regex instance to avoid state issues with global flag)
+          let match;
+          const fileUrlRegexLocal = new RegExp(FILE_URL_REGEX.source, FILE_URL_REGEX.flags);
+          while ((match = fileUrlRegexLocal.exec(text)) !== null) {
+            fileUrls.push(match[1]);
+          }
+
+          // Extract URL context URLs (use Set for O(1) lookups)
+          const urlContextRegexLocal = new RegExp(URL_CONTEXT_REGEX.source, URL_CONTEXT_REGEX.flags);
+          const urlContextMatches = text.matchAll(urlContextRegexLocal);
+          for (const urlMatch of urlContextMatches) {
+            const url = urlMatch[1];
+            if (url) urlContextUrlsSet.add(url);
+          }
+
+          // Extract direct URLs
+          const directUrlRegexLocal = new RegExp(DIRECT_URL_REGEX.source, DIRECT_URL_REGEX.flags);
+          const directUrlMatches = text.matchAll(directUrlRegexLocal);
+          for (const directMatch of directUrlMatches) {
+            const url = directMatch[0];
+            if (url) urlContextUrlsSet.add(url);
+          }
+
+          // Clean URL_CONTEXT markers (create new instance to avoid global regex state issues)
+          const urlContextReplaceRegex = new RegExp(URL_CONTEXT_REGEX.source, URL_CONTEXT_REGEX.flags);
+          const updatedText = text.replace(urlContextReplaceRegex, (_match: string, url: string) => {
             return url;
           });
+
           return { ...part, text: updatedText };
         }
         return part;
@@ -99,16 +82,33 @@ function cleanMessages(messages: any[]): any[] {
     }
     return message;
   });
+
+  return {
+    fileUrls,
+    urlContextUrls: Array.from(urlContextUrlsSet),
+    cleanedMessages,
+  };
+}
+
+/**
+ * Selected cards context is now formatted on the client side and sent directly.
+ * This eliminates the need for server-side database fetch.
+ * If selectedCardsContext is provided, use it; otherwise return empty string.
+ */
+function getSelectedCardsContext(body: any): string {
+  // Client now sends pre-formatted context string
+  return body.selectedCardsContext || "";
 }
 
 /**
  * Build the enhanced system prompt with guidelines and detection hints
+ * Uses array join for better performance than string concatenation
  */
 function buildSystemPrompt(baseSystem: string, fileUrls: string[], urlContextUrls: string[]): string {
-  let finalSystemPrompt = baseSystem;
+  const parts: string[] = [baseSystem];
 
   // Add web search decision-making guidelines
-  finalSystemPrompt += `
+  parts.push(`
 
 WEB SEARCH DECISION GUIDELINES:
 You have access to the searchWeb tool. Use the following guidelines to decide when to search vs use internal knowledge:
@@ -133,20 +133,19 @@ When a query requires both current data AND conceptual explanation, do both:
 3. Synthesize into a cohesive answer
 
 CONFIDENCE THRESHOLD:
-If you are uncertain about a fact's accuracy or currency, prefer to search rather than risk providing outdated information.
-`;
+If you are uncertain about a fact's accuracy or currency, prefer to search rather than risk providing outdated information.`);
 
   // Add file detection hint if file URLs are present
   if (fileUrls.length > 0) {
-    finalSystemPrompt += `\n\nFILE DETECTION: The user's message contains ${fileUrls.length} file(s). You MUST call the processFiles tool with these URLs to analyze them: ${fileUrls.join(', ')}`;
+    parts.push(`\n\nFILE DETECTION: The user's message contains ${fileUrls.length} file(s). You MUST call the processFiles tool with these URLs to analyze them: ${fileUrls.join(', ')}`);
   }
 
   // Add URL detection hint if URLs are present
   if (urlContextUrls.length > 0) {
-    finalSystemPrompt += `\n\nURL DETECTION: The user's message contains ${urlContextUrls.length} URL(s): ${urlContextUrls.join(', ')}. You should call the processUrls tool with these URLs to analyze them.`;
+    parts.push(`\n\nURL DETECTION: The user's message contains ${urlContextUrls.length} URL(s): ${urlContextUrls.join(', ')}. You should call the processUrls tool with these URLs to analyze them.`);
   }
 
-  return finalSystemPrompt;
+  return parts.join('');
 }
 
 export async function POST(req: Request) {
@@ -181,18 +180,33 @@ export async function POST(req: Request) {
       throw convertError;
     }
 
-    // Extract URLs and files from messages
-    const fileUrls = extractFileUrls(convertedMessages);
-    const urlContextUrls = extractUrlContextUrls(convertedMessages);
+    // Process messages in single pass: extract URLs/files and clean markers
+    const { fileUrls, urlContextUrls, cleanedMessages } = processMessages(convertedMessages);
 
-    // Clean messages
-    const cleanedMessages = cleanMessages(convertedMessages);
+    // Get pre-formatted selected cards context from client (no DB fetch needed)
+    const selectedCardsContext = getSelectedCardsContext(body);
 
-    // Build system prompt
-    const finalSystemPrompt = buildSystemPrompt(system, fileUrls, urlContextUrls);
+    // Build system prompt with all context parts (using array join for efficiency)
+    const systemPromptParts: string[] = [buildSystemPrompt(system, fileUrls, urlContextUrls)];
+
+    // Inject selected cards context if available
+    if (selectedCardsContext) {
+      systemPromptParts.push(`\n\n${selectedCardsContext}`);
+    }
+
+    // Inject reply context if available
+    const replySelections = body.replySelections || [];
+    if (replySelections.length > 0) {
+      const replyContext = replySelections
+        .map((sel: { text: string }) => `> ${sel.text}`)
+        .join("\n");
+      systemPromptParts.push(`\n\nREPLY CONTEXT:\nThe user is replying specifically to these parts of the previous message:\n${replyContext}`);
+    }
+
+    const finalSystemPrompt = systemPromptParts.join('');
 
     // Get model
-    const modelId = body.modelId || "gemini-2.5-pro";
+    const modelId = body.modelId || "gemini-3-flash-preview";
     const model = google(modelId);
 
     // Create tools using the modular factory
@@ -214,6 +228,49 @@ export async function POST(req: Request) {
       messages: cleanedMessages,
       stopWhen: stepCountIs(25),
       tools,
+      onFinish: ({ usage, finishReason }) => {
+        const usageInfo = {
+          inputTokens: usage?.inputTokens,
+          outputTokens: usage?.outputTokens,
+          totalTokens: usage?.totalTokens,
+          cachedInputTokens: usage?.cachedInputTokens, // Standard property
+          reasoningTokens: usage?.reasoningTokens,
+          // Extended properties (Google provider specific)
+          inputTokenDetails: (usage as any)?.inputTokenDetails ? {
+            cacheReadTokens: (usage as any).inputTokenDetails?.cacheReadTokens,
+            cacheWriteTokens: (usage as any).inputTokenDetails?.cacheWriteTokens,
+            noCacheTokens: (usage as any).inputTokenDetails?.noCacheTokens,
+          } : undefined,
+          finishReason,
+        };
+        
+        logger.info("📊 [CHAT-API] Final Token Usage:", usageInfo);
+      },
+      onStepFinish: (result) => {
+        // stepType exists in runtime but may not be in type definitions
+        const stepResult = result as typeof result & { stepType?: "initial" | "continue" | "tool-result" };
+        const { stepType, usage, finishReason } = stepResult;
+        
+        if (usage) {
+          const stepUsageInfo = {
+            stepType: stepType || 'unknown',
+            inputTokens: usage?.inputTokens,
+            outputTokens: usage?.outputTokens,
+            totalTokens: usage?.totalTokens,
+            cachedInputTokens: usage?.cachedInputTokens, // Standard property
+            reasoningTokens: usage?.reasoningTokens,
+            finishReason,
+            // Extended properties (Google provider specific)
+            inputTokenDetails: (usage as any)?.inputTokenDetails ? {
+              cacheReadTokens: (usage as any).inputTokenDetails?.cacheReadTokens,
+              cacheWriteTokens: (usage as any).inputTokenDetails?.cacheWriteTokens,
+              noCacheTokens: (usage as any).inputTokenDetails?.noCacheTokens,
+            } : undefined,
+          };
+          
+          logger.debug(`📊 [CHAT-API] Step Usage (${stepType || 'unknown'}):`, stepUsageInfo);
+        }
+      },
     });
 
     logger.debug("🔍 [CHAT-API] streamText returned, calling toUIMessageStreamResponse...");

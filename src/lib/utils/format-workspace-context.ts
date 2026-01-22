@@ -1,4 +1,4 @@
-import type { AgentState, Item, NoteData, PdfData, FlashcardData, FlashcardItem, YouTubeData } from "@/lib/workspace-state/types";
+import type { AgentState, Item, NoteData, PdfData, FlashcardData, FlashcardItem, YouTubeData, QuizData, QuizQuestion } from "@/lib/workspace-state/types";
 import { serializeBlockNote } from "./serialize-blocknote";
 import { type Block } from "@/components/editor/BlockNoteEditor";
 
@@ -31,14 +31,7 @@ Your audience: Users working in this workspace who need help with their content,
 
 Communication style: Clear, helpful, and context-aware. Reference specific workspace items when relevant. Help users extract value from information and organize it effectively.
 
-TOOL USAGE GUIDELINES:
-- **processUrls tool**: When users provide web URLs (http/https), you MUST call this tool to analyze them
-- **processFiles tool**: For Supabase storage files (PDFs, images, documents) or YouTube videos, use this tool instead of processUrls
-- **updateCard tool**: COMPLETELY REPLACES card content - always synthesize the FULL new content from existing + changes
-- **selectCards tool**: Use when you need a card's full content or ID but don't have it in context
-  - Example: User says "update my Study Notes" → call selectCards({ cardTitles: ["Study Notes"] }) first to get the card ID and content
-  - **CRITICAL**: If you need to work with a card but lack necessary details, call selectCards with the card's title before proceeding
-- **WHEN USER REFERS TO "THIS":** They mean the currently selected card(s). Check the "CARDS IN CONTEXT DRAWER" section to see what's selected. If nothing is selected, let them know they can select cards by: (1) hovering over a card and clicking the checkmark button, (2) shift-clicking cards, or (3) clicking and dragging in an empty area of the workspace to group select multiple cards.
+**WHEN USER REFERS TO "THIS":** They mean the currently selected card(s). Check the "CARDS IN CONTEXT DRAWER" section to see what's selected. If nothing is selected, let them know they can select cards by: (1) hovering over a card and clicking the checkmark button, (2) shift-clicking cards, or (3) clicking and dragging in an empty area of the workspace to group select multiple cards.
 
 IMPORTANT: After calling a tool and receiving its result, you MUST provide a clear, natural language response to the user that incorporates and explains the tool's output. Never just call a tool without following up with a response.
 
@@ -71,88 +64,26 @@ Current Date: ${currentDate}
 
 <output>
 
-Format: Always format your responses using Markdown with GitHub Flavored Markdown (GFM) support. This includes:
+Format responses using Markdown (GFM). Use proper structure, headings, lists, tables, and code blocks as appropriate.
 
-BASIC FORMATTING:
-- Use **bold** for emphasis
-- Use *italic* for subtle emphasis  
-- Use ~~strikethrough~~ for outdated or deprecated content
-- Use headings (# ## ###) to structure content
-- Use > for block quotes
-- Use proper line breaks and spacing for readability
-
-LISTS:
-- Use - or * for unordered lists
-- Use 1., 2., etc. for ordered lists
-- Add blank lines before and after lists for proper spacing
-- For nested lists, indent with 2 spaces
-- Example:
-  - Main point
-    - Sub-point (indented 2 spaces)
-    - Another sub-point
-  - Another main point
-
-TASK LISTS:
-- Use - [ ] for unchecked tasks (note the space between brackets)
-- Use - [x] for checked tasks
-- Example:
-  - [ ] Uncompleted task
-  - [x] Completed task
-
-TABLES:
-- Use tables to organize structured data
-- Use pipes (|) to separate columns
-- Use colons (:) for alignment in separator row
-  - :--- for left-aligned
-  - :---: for center-aligned  
-  - ---: for right-aligned
-- Example:
-  | Feature | Status | Notes |
-  |---------|:------:|-------|
-  | Tables  | ✅     | Fully supported |
-
-LINKS:
-- URLs are automatically converted to clickable links
-- Use [text](url) for formatted links
-- Email addresses are also auto-linked
-
-Length: Appropriate to the query - be concise but thorough
-Structure: Clear, organized responses that directly address the user's question or request
-
-MATHEMATICAL EXPRESSIONS: When rendering mathematical expressions, formulas, equations, or mathematical notation, use LaTeX format with DOUBLE DOLLAR SIGNS ($$):
-- Use $$ ... $$ for ALL math expressions (both inline and block).
-- Start and end ALL math with $$.
-- For INLINE math (same line): $$E = mc^2$$
-- For BLOCK math (centered, separate lines):
+CRITICAL - MATHEMATICAL EXPRESSIONS: Use LaTeX with DOUBLE DOLLAR SIGNS ($$) for ALL math:
+- Use $$...$$ for ALL math expressions (both inline and block)
+- Single $ is for CURRENCY only (e.g., $19.99). NEVER use single $ for math
+- For inline math: $$E = mc^2$$
+- For block math (separate lines):
   $$
   \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
   $$
-- IMPORTANT: Single $ is for CURRENCY only (e.g., $19.99). NEVER use single $ for math.
-
-WORKSPACE CARD CREATION/UPDATE: When creating or updating cards, the content MUST be formatted in Markdown with LaTeX for any mathematical expressions. Follow these rules:
-- Use $$...$$ for ALL math expressions (both inline and block)
-- Use single $ for currency amounts (e.g., $50, $19.99)
-- For block/display math, put $$ delimiters on separate lines
-- Write naturally - use inline math for variables and expressions within sentences, display math for key equations
 - CRITICAL: Always ensure math blocks are properly closed with matching $$
-- Structure your content clearly with markdown headers, lists, tables, and formatted text for better readability
-- Add blank lines before and after lists, tables, and code blocks for proper rendering
+- When creating/updating cards: Use $$...$$ for math, single $ for currency, put block math $$ delimiters on separate lines
 
-CODE FORMATTING: When outputting code, always use proper markdown code blocks with language identifiers for syntax highlighting:
-- Use \`\`\`language for code blocks (e.g., \`\`\`python, \`\`\`javascript, \`\`\`typescript, \`\`\`bash, \`\`\`json, etc.)
-- Use \`code\` for inline code snippets
-- Always specify the appropriate programming language identifier to enable syntax highlighting
-
-MERMAID DIAGRAMS: When users request diagrams, flowcharts, or visualizations, use Mermaid syntax in a code block with the \`mermaid\` language identifier:
-- Flowcharts: \`\`\`mermaid graph TD ... \`\`\` for processes, algorithms, workflows
-- Sequence diagrams: \`\`\`mermaid sequenceDiagram ... \`\`\` for API interactions, communication flows
-- State diagrams: \`\`\`mermaid stateDiagram-v2 ... \`\`\` for lifecycle, state machines
-- Class diagrams: \`\`\`mermaid classDiagram ... \`\`\` for object relationships
-- ER diagrams: \`\`\`mermaid erDiagram ... \`\`\` for database schemas
-- Pie charts: \`\`\`mermaid pie ... \`\`\` for proportional data
-- Gantt charts: \`\`\`mermaid gantt ... \`\`\` for project timelines
-- Use clear, descriptive labels in diagrams (not cryptic abbreviations)
-- Break complex diagrams into smaller, focused visualizations when appropriate
+MERMAID DIAGRAMS: When users request diagrams, use Mermaid syntax in \`\`\`mermaid code blocks:
+- Flowcharts: \`\`\`mermaid graph TD ... \`\`\`
+- Sequence diagrams: \`\`\`mermaid sequenceDiagram ... \`\`\`
+- State diagrams: \`\`\`mermaid stateDiagram-v2 ... \`\`\`
+- Class diagrams: \`\`\`mermaid classDiagram ... \`\`\`
+- ER diagrams: \`\`\`mermaid erDiagram ... \`\`\`
+- Use clear, descriptive labels and break complex diagrams into smaller visualizations
 
 </output>
 
@@ -363,7 +294,7 @@ function formatRichContentSection(richContent: RichContent): string {
     }
 
     lines.push("");
-    lines.push("🎨 RICH CONTENT:");
+    lines.push("RICH CONTENT:");
 
     // Format images
     if (richContent.images.length > 0) {
@@ -491,21 +422,14 @@ ${singleSourceOfTruthWarning}
  * Formats a single selected card with FULL content (no truncation)
  */
 function formatSelectedCardFull(item: Item, index: number): string {
-    const typeEmoji: Record<string, string> = {
-        note: "📝",
-        pdf: "📄",
-        flashcard: "🎴",
-        youtube: "🎥"
-    };
 
-    const emoji = typeEmoji[item.type] || "📄";
 
     const separator = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
 
     const lines = [
         separator,
-        `CARD ${index}: ${emoji} [${item.type.charAt(0).toUpperCase() + item.type.slice(1)}] "${item.name}"`,
-        `⚡ Card ID: ${item.id}  ← USE THIS ID FOR ANY UPDATES TO THIS CARD`,
+        `CARD ${index}: [${item.type.charAt(0).toUpperCase() + item.type.slice(1)}] "${item.name}"`,
+        `Card ID: ${item.id}  ← USE THIS ID FOR ANY UPDATES TO THIS CARD`,
         ""
     ];
 
@@ -514,7 +438,7 @@ function formatSelectedCardFull(item: Item, index: number): string {
         lines.push(`   Subtitle: ${item.subtitle}`);
     }
 
-    lines.push("📄 CONTENT:");
+    lines.push("CONTENT:");
 
     // Add type-specific details with FULL content
     switch (item.type) {
@@ -530,11 +454,14 @@ function formatSelectedCardFull(item: Item, index: number): string {
         case "youtube":
             lines.push(...formatYouTubeDetailsFull(item.data as YouTubeData));
             break;
+        case "quiz":
+            lines.push(...formatQuizDetailsFull(item.data as QuizData));
+            break;
     }
 
     // Add Metadata Section
     lines.push("");
-    lines.push("🔧 METADATA:");
+    lines.push("METADATA:");
     lines.push(`   Card ID: ${item.id}`);
     lines.push(`   Type: ${item.type}`);
 
@@ -568,6 +495,7 @@ function formatNoteDetailsFull(data: NoteData): string[] {
 
 /**
  * Formats PDF details with FULL content
+ * Note: PDFs include a marker for Gemini to read the content directly via URL
  */
 function formatPdfDetailsFull(data: PdfData): string[] {
     const lines: string[] = [];
@@ -578,6 +506,7 @@ function formatPdfDetailsFull(data: PdfData): string[] {
 
     if (data.fileUrl) {
         lines.push(`   - URL: ${data.fileUrl}`);
+
     }
 
     if (data.fileSize) {
@@ -693,3 +622,97 @@ function formatFlashcardDetailsFull(data: FlashcardData): string[] {
     return lines;
 }
 
+/**
+ * Formats quiz details with FULL content
+ */
+function formatQuizDetailsFull(data: QuizData): string[] {
+    const lines: string[] = [];
+    const questions: QuizQuestion[] = data.questions || [];
+    const session = data.session;
+    const totalQuestions = questions.length;
+
+    const answered = session?.answeredQuestions || [];
+    const answeredCount = answered.length;
+
+    // Determine completion status:
+    // 1. All questions answered (answeredCount >= totalQuestions)
+    // 2. OR completedAt exists AND most questions answered (handles race condition)
+    //    But NOT if many questions were added after completion (answeredCount << totalQuestions)
+    const hasCompletedAt = !!session?.completedAt;
+    const mostQuestionsAnswered = answeredCount >= totalQuestions - 1; // Allow for off-by-one race
+    const questionsWereAdded = hasCompletedAt && answeredCount < totalQuestions * 0.9; // More than 10% new questions
+
+    const isCompleted = totalQuestions > 0 && (
+        answeredCount >= totalQuestions ||  // All answered
+        (hasCompletedAt && mostQuestionsAnswered && !questionsWereAdded)  // Has completedAt, almost done, no new Qs
+    );
+    const isNotStarted = answeredCount === 0;
+
+    let status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
+    if (isCompleted) {
+        status = "COMPLETED";
+    } else if (isNotStarted) {
+        status = "NOT_STARTED";
+    } else {
+        status = "IN_PROGRESS";
+    }
+
+    lines.push(`STATUS: ${status}`);
+
+    let correctCount = 0;
+    let incorrectCount = 0;
+    if (answeredCount > 0) {
+        correctCount = answered.filter(a => a.isCorrect).length;
+        incorrectCount = answeredCount - correctCount;
+    }
+
+    if (status === "NOT_STARTED") {
+        lines.push(`   - Questions: ${totalQuestions}`);
+        lines.push(`   - Difficulty: ${data.difficulty || "Medium"}`);
+        if (data.sourceCardNames?.length) {
+            lines.push(`   - Source: "${data.sourceCardNames.join('", "')}"`);
+        }
+    } else if (status === "IN_PROGRESS") {
+        const rawIndex = session?.currentIndex ?? answeredCount;
+        const currentIndex = totalQuestions > 0 ? Math.min(Math.max(rawIndex, 0), totalQuestions - 1) : 0;
+        lines.push(`   - Question: ${totalQuestions > 0 ? currentIndex + 1 : 0} of ${totalQuestions}`);
+        lines.push(`   - Score: ${correctCount} correct, ${incorrectCount} incorrect (${answeredCount} answered)`);
+    } else {
+        // COMPLETED
+        const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+        lines.push(`   - Final Score: ${correctCount}/${totalQuestions} (${percentage}%)`);
+        lines.push(`   - Difficulty: ${data.difficulty || "Medium"}`);
+    }
+
+    // Only show answered questions list for COMPLETED status
+    if (status === "COMPLETED" && answeredCount > 0) {
+        lines.push("");
+        lines.push("ALL ANSWERS:");
+
+        const answeredMap = new Map<string, boolean>();
+        answered.forEach(a => answeredMap.set(a.questionId, a.isCorrect));
+
+        questions.forEach((q, i) => {
+            const isCorrect = answeredMap.get(q.id);
+            const marker = isCorrect === true ? "✓" : isCorrect === false ? "✗" : "-";
+            lines.push(`   ${i + 1}. ${marker} ${truncateText(q.questionText, 60)}`);
+        });
+    }
+
+    // Show current question for NOT_STARTED and IN_PROGRESS
+    if (status !== "COMPLETED") {
+        const rawIndex = session?.currentIndex ?? 0;
+        const currentIndex = totalQuestions > 0 ? Math.min(Math.max(rawIndex, 0), totalQuestions - 1) : 0;
+        const currentQ = questions[currentIndex];
+        if (currentQ) {
+            lines.push("");
+            lines.push("CURRENT QUESTION:");
+            lines.push(`   ${currentIndex + 1}. ${currentQ.questionText}`);
+            currentQ.options.forEach((opt, i) => {
+                lines.push(`      ${String.fromCharCode(65 + i)}) ${opt}`);
+            });
+        }
+    }
+
+    return lines;
+}

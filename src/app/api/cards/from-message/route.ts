@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id;
 
     const body = await request.json();
-    const { content, workspaceId } = body;
+    const { content, workspaceId, folderId } = body;
 
 
 
@@ -64,10 +64,15 @@ INSTRUCTIONS:
    - Use > for block quotes when appropriate
    - Use proper line breaks and spacing for readability
 4. Format mathematical expressions using LaTeX:
-   - Use $...$ for inline math within text (e.g., The equation $E = mc^2$ shows...)
-   - Use $$...$$ for display/block math equations on separate lines
-   - Ensure math blocks are properly closed - every opening $ or $$ must have a matching closing $ or $$
-   - Add spaces around $ symbols when math appears in lists or tables
+   - Use $$...$$ for ALL math expressions (both inline and block)
+   - Single $ is for CURRENCY only (e.g., $19.99). NEVER use single $ for math
+   - For inline math: $$E = mc^2$$ (same line as text)
+   - For block math (separate lines):
+     $$
+     \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+     $$
+   - CRITICAL: Always ensure math blocks are properly closed with matching $$
+   - Add spaces around $$ symbols when math appears in lists or tables
    - Do not add periods, commas, or other punctuation immediately after math expressions
 5. If the content contains multiple selections or fragments, combine them into a single cohesive narrative
 6. Maintain the original meaning and key information while improving clarity and organization
@@ -99,7 +104,7 @@ Return ONLY the reformatted note content in markdown format. Do not include any 
       workspaceId,
       title,
       content: cleanedContent,
-
+      folderId,
     });
 
     logger.debug("📝 [CREATE-CARD-FROM-MESSAGE] Card created successfully", {
